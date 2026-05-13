@@ -61,9 +61,9 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link href="#contact" className="btn-primary navbar__cta">
+            <button onClick={() => window.dispatchEvent(new Event('openContactModal'))} className="btn-primary navbar__cta">
               Hablemos
-            </Link>
+            </button>
           </div>
 
           {/* Mobile Toggle Button */}
@@ -144,13 +144,15 @@ export default function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 + navLinks.length * 0.08, duration: 0.3 }}
                 >
-                  <Link
-                    href="#contact"
-                    className="btn-primary navbar__dropdown-cta"
-                    onClick={handleLinkClick}
+                  <button
+                    onClick={() => {
+                      handleLinkClick();
+                      window.dispatchEvent(new Event('openContactModal'));
+                    }}
+                    className="btn-primary navbar__dropdown-cta w-full"
                   >
                     Hablemos
-                  </Link>
+                  </button>
                 </motion.div>
               </div>
             </motion.div>

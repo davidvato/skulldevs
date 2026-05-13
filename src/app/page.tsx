@@ -61,7 +61,7 @@ export default function Home() {
             <div>
               <h3 className="text-xl font-bold mb-2">Inicia hoy</h3>
               <p className="text-sm text-gray-400 mb-4">Transforma tu idea en código real.</p>
-              <a href="#contact" className="btn-primary w-full py-3" style={{ display: 'block', textAlign: 'center' }}>Contáctanos</a>
+              <button onClick={() => window.dispatchEvent(new Event('openContactModal'))} className="btn-primary w-full py-3" style={{ display: 'block', textAlign: 'center' }}>Contáctanos</button>
             </div>
           </motion.div>
 

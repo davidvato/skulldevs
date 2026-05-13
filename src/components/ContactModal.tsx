@@ -8,31 +8,22 @@ export default function ContactModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  // Listen for hash changes to open/close modal
   useEffect(() => {
-    const handleHashChange = () => {
-      if (window.location.hash === '#contact') {
-        setIsOpen(true);
-        // Lock scroll
-        document.body.style.overflow = 'hidden';
-      } else {
-        setIsOpen(false);
-        document.body.style.overflow = '';
-      }
+    const handleOpen = () => {
+      setIsOpen(true);
+      document.body.style.overflow = 'hidden';
     };
 
-    // Check initial hash
-    handleHashChange();
-
-    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('openContactModal', handleOpen);
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('openContactModal', handleOpen);
       document.body.style.overflow = '';
     };
   }, []);
 
   const closeModal = () => {
-    window.location.hash = ''; // This will trigger the hashchange event and close it
+    setIsOpen(false);
+    document.body.style.overflow = '';
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,10 +32,10 @@ export default function ContactModal() {
 
     const formData = new FormData(e.currentTarget);
     // Agregamos la Access Key de Web3Forms (debes reemplazar 'YOUR_ACCESS_KEY_HERE' con tu clave real)
-    formData.append('access_key', 'YOUR_ACCESS_KEY_HERE');
+    formData.append('access_key', 'f0ab59bf-0c3c-4eb0-aee4-35beb0620cf9');
     // Para que no envíe captcha en desarrollo/versión simple
     formData.append('from_name', 'SkullDevs Website Contact');
-    
+
     try {
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
@@ -82,7 +73,7 @@ export default function ContactModal() {
           />
 
           {/* Modal Container */}
-          <div className="modal-wrapper" pointer-events="none">
+          <div className="modal-wrapper" style={{ pointerEvents: 'none' }}>
             <motion.div
               className="modal-content bento-item"
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -103,7 +94,7 @@ export default function ContactModal() {
               </div>
 
               {status === 'success' ? (
-                <motion.div 
+                <motion.div
                   className="flex flex-col items-center justify-center py-10"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -158,8 +149,8 @@ export default function ContactModal() {
                     </p>
                   )}
 
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn-primary flex items-center justify-center gap-2 mt-2"
                     disabled={status === 'loading'}
                   >
