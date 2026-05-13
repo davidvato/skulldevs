@@ -59,8 +59,8 @@ body {
 
 .navbar__logo {
   position: relative;
-  width: 9rem;
-  height: 2.5rem;
+  width: 12rem;
+  height: 3.5rem;
   display: block;
   flex-shrink: 0;
 }
@@ -407,8 +407,8 @@ a {
   }
 
   .navbar__logo {
-    width: 7rem;
-    height: 2rem;
+    width: 9rem;
+    height: 2.5rem;
   }
 
   .bento-grid {
@@ -509,5 +509,116 @@ a {
 
   .md\:flex-row {
     flex-direction: row;
+  }
+}
+
+/* ========================================
+   MODAL & FORMS
+   ======================================== */
+
+.modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 500px;
+}
+
+.modal-content {
+  background: #0f0f0f;
+  border: 1px solid rgba(204, 255, 0, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(204, 255, 0, 0.05);
+  padding: 2.5rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #d1d5db;
+}
+
+.input-field {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.875rem 1rem;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.input-field::placeholder {
+  color: #4b5563;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: rgba(204, 255, 0, 0.5);
+  background: rgba(204, 255, 0, 0.02);
+  box-shadow: 0 0 0 4px rgba(204, 255, 0, 0.1);
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-content {
+    padding: 1.5rem;
   }
 }
