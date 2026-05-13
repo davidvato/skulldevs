@@ -149,7 +149,17 @@ export default function Home() {
             </div>
             <p className="text-gray-500 text-sm text-center">© 2026 SkullDevs. Engineering the future, today.</p>
             <div className="flex gap-6 text-xs uppercase font-bold tracking-widest text-gray-400" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-              <a href="mailto:skulldevs2020@gmail.com" className="transition-colors" style={{ wordBreak: 'break-all' }}>skulldevs2020@gmail.com</a>
+              <a 
+                href="#contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.dispatchEvent(new Event('openContactModal'));
+                }}
+                className="hover:text-accent transition-colors cursor-pointer" 
+                style={{ wordBreak: 'break-all' }}
+              >
+                skulldevs2020@gmail.com
+              </a>
             </div>
           </motion.div>
         </motion.div>

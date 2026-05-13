@@ -8,22 +8,39 @@ export default function ContactModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
+  // Listen for hash changes to open/close modal
   useEffect(() => {
-    const handleOpen = () => {
-      setIsOpen(true);
-      document.body.style.overflow = 'hidden';
+    const handleHashChange = () => {
+      if (window.location.hash === '#contact') {
+        setIsOpen(true);
+        // Lock scroll
+        document.body.style.overflow = 'hidden';
+      } else {
+        setIsOpen(false);
+        document.body.style.overflow = '';
+      }
     };
-    window.addEventListener('openContactModal', handleOpen);
+
+    // Check initial hash
+    handleHashChange();
+
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Also support custom event
+    const handleCustomEvent = () => {
+      window.location.hash = '#contact';
+    };
+    window.addEventListener('openContactModal', handleCustomEvent);
+    
     return () => {
-      window.removeEventListener('openContactModal', handleOpen);
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('openContactModal', handleCustomEvent);
       document.body.style.overflow = '';
     };
   }, []);
 
   const closeModal = () => {
-    setIsOpen(false);
-    setStatus('idle');
-    document.body.style.overflow = '';
+    window.location.hash = ''; // This will trigger the hashchange event and close it
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,21 +58,26 @@ export default function ContactModal() {
     const u = base + provider + endpoint;
     
     data.append('access_key', k);
-    data.append('from_name', 'SkullDevs Website');
+    data.append('from_name', 'SkullDevs Website Contact');
 
     try {
-      const res = await fetch(u, {
+      const response = await fetch(u, {
         method: 'POST',
         body: data,
       });
 
-      if (res.ok) {
+      if (response.ok) {
         setStatus('success');
-        setTimeout(closeModal, 3000);
+        // Reset form after 3 seconds and close modal
+        setTimeout(() => {
+          setStatus('idle');
+          closeModal();
+        }, 3000);
       } else {
         setStatus('error');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       setStatus('error');
     }
   };
@@ -63,66 +85,112 @@ export default function ContactModal() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div 
+        <div className="modal-root">
+          {/* Backdrop */}
+          <motion.div
+            className="modal-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
             onClick={closeModal}
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           />
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-lg bg-zinc-900 border border-white/10 p-8 rounded-3xl shadow-2xl overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
-            
-            <button 
-              onClick={closeModal}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+
+          {/* Modal Container */}
+          <div className="modal-wrapper" style={{ pointerEvents: 'none' }}>
+            <motion.div
+              className="modal-content bento-item"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{ pointerEvents: 'auto' }}
             >
-              <X className="w-6 h-6" />
-            </button>
+              <button className="modal-close" onClick={closeModal}>
+                <X className="w-5 h-5" />
+              </button>
 
-            {status === 'success' ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center mb-6">
-                  <CheckCircle2 className="w-10 h-10 text-accent" />
-                </div>
-                <h2 className="text-3xl font-bold mb-4">¡Mensaje Enviado!</h2>
-                <p className="text-gray-400">Gracias por contactarnos. Nos pondremos en contacto contigo pronto.</p>
+              <div className="mb-8">
+                <h2 className="heading-m mb-2">Hablemos de tu proyecto</h2>
+                <p className="text-gray-400 text-sm">
+                  Déjanos tus datos y te contactaremos a la brevedad para aterrizar tus ideas.
+                </p>
               </div>
-            ) : (
-              <>
-                <div className="mb-8">
-                  <h2 className="text-3xl font-bold mb-2">Hablemos</h2>
-                  <p className="text-gray-400">Cuéntanos sobre tu proyecto y cómo podemos ayudarte.</p>
-                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Nombre</label>
-                    <input name="name" type="text" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all" />
+              {status === 'success' ? (
+                <motion.div 
+                  className="flex flex-col items-center justify-center py-10"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  <CheckCircle2 className="w-16 h-16 text-accent mb-4" />
+                  <h3 className="text-xl font-bold mb-2">¡Mensaje Enviado!</h3>
+                  <p className="text-gray-400 text-center">
+                    Hemos recibido tu información. Nos pondremos en contacto pronto.
+                  </p>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  <div className="input-group">
+                    <label htmlFor="name" className="input-label">Nombre</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      required
+                      className="input-field"
+                      placeholder="Ej. David Vato"
+                    />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
-                    <input name="email" type="email" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all" />
+
+                  <div className="input-group">
+                    <label htmlFor="email" className="input-label">Correo Electrónico</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      className="input-field"
+                      placeholder="tucorreo@empresa.com"
+                    />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Mensaje</label>
-                    <textarea name="message" required rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all resize-none" />
+
+                  <div className="input-group">
+                    <label htmlFor="message" className="input-label">Requerimiento</label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      required
+                      rows={4}
+                      className="input-field resize-none"
+                      placeholder="Cuéntanos brevemente qué necesitas construir..."
+                    ></textarea>
                   </div>
-                  {status === 'error' && <p className="text-red-500 text-sm">Error al enviar.</p>}
-                  <button type="submit" disabled={status === 'loading'} className="w-full btn-primary py-4 rounded-xl font-bold flex items-center justify-center gap-2">
-                    {status === 'loading' ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Enviar Mensaje <Send className="w-4 h-4" /></>}
+
+                  {status === 'error' && (
+                    <p className="text-red-500 text-sm">
+                      Hubo un error al enviar el mensaje. Intenta de nuevo o contáctanos por email.
+                    </p>
+                  )}
+
+                  <button 
+                    type="submit" 
+                    className="btn-primary flex items-center justify-center gap-2 mt-2"
+                    disabled={status === 'loading'}
+                  >
+                    {status === 'loading' ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        Enviar Mensaje
+                        <Send className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 </form>
-              </>
-            )}
-          </motion.div>
+              )}
+            </motion.div>
+          </div>
         </div>
       )}
     </AnimatePresence>
