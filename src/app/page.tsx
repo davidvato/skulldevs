@@ -65,13 +65,10 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Tech Stack Cell */}
-          <motion.div variants={item} className="bento-item" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <Cpu style={{ width: '2.5rem', height: '2.5rem', color: '#6b7280' }} />
-            <div>
-              <p className="text-xs uppercase tracking-tighter text-gray-500 mb-2" style={{ marginBottom: '0.25rem' }}>Stack</p>
-              <p className="text-lg font-bold">Next.js / Node / Cloud</p>
-            </div>
+          {/* Experience Cell */}
+          <motion.div variants={item} className="bento-item" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+            <p className="text-5xl font-black text-accent mb-2">50+</p>
+            <p className="text-xs uppercase tracking-widest text-gray-500">Proyectos Lanzados</p>
           </motion.div>
 
           {/* Service: Web */}
@@ -82,6 +79,37 @@ export default function Home() {
             </div>
             <h3 className="heading-m mb-2">Web Dev</h3>
             <p className="text-sm text-gray-400">Interfaces ultra-rápidas y escalables.</p>
+          </motion.div>
+
+          {/* Service: Consulting */}
+          <motion.div variants={item} className="bento-item" style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+              <Lightbulb style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
+              <ArrowUpRight style={{ width: '1.5rem', height: '1.5rem', color: '#4b5563' }} />
+            </div>
+            <h3 className="heading-m mb-2">Consultoría</h3>
+            <p className="text-sm text-gray-400">Arquitectura y estrategia digital experta.</p>
+          </motion.div>
+
+          {/* Service: Data */}
+          <motion.div variants={item} className="bento-item" style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+              <Database style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
+              <ArrowUpRight style={{ width: '1.5rem', height: '1.5rem', color: '#4b5563' }} />
+            </div>
+            <h3 className="heading-m mb-2">Backend</h3>
+            <p className="text-sm text-gray-400">Estructuras de datos robustas y seguras.</p>
+          </motion.div>
+
+          {/* Tech Stack Cell */}
+          <motion.div variants={item} className="bento-item" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Cpu style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
+            <div>
+              <h3 className="heading-m mb-2">Stack</h3>
+              <p className="text-sm text-gray-400">Next.js / Node / Cloud</p>
+              <p className="text-sm text-gray-400">HTML5 / CSS3 / Vanilla JS</p>
+              <p className="text-sm text-gray-400">Etc...</p>
+            </div>
           </motion.div>
 
           {/* Case Study: MatchUp Sports */}
@@ -110,30 +138,30 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Service: Consulting */}
-          <motion.div variants={item} className="bento-item" style={{ cursor: 'pointer' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
-              <Lightbulb style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
-              <ArrowUpRight style={{ width: '1.5rem', height: '1.5rem', color: '#4b5563' }} />
+          {/* Case Study: Copreset */}
+          <motion.div variants={item} className="bento-item span-2 row-2" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'pointer' }}>
+            <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(135deg, #000, rgba(204, 255, 0, 0.1))', opacity: 0.5, transition: 'opacity 0.3s ease' }} />
+            <div className="relative z-10 h-full" style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'auto' }}>
+                <div className="bg-accent" style={{ color: '#000', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  Caso de Éxito
+                </div>
+                <a href="https://copreset.com" target="_blank" rel="noopener noreferrer">
+                  <ArrowUpRight style={{ width: '2rem', height: '2rem', color: '#fff' }} />
+                </a>
+              </div>
+              <div style={{ marginTop: '3rem' }}>
+                <h3 className="text-4xl font-black mb-4 uppercase">COPRESET</h3>
+                <p className="text-gray-300 leading-relaxed mb-6" style={{ fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>
+                  Líderes en alta ingeniería ambiental. Diseñamos su presencia digital para destacar su tecnología de punta en biodigestores y gestión de residuos a nivel global, operando en más de 6 países.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <span className="text-xs font-mono text-accent">#Industrial</span>
+                  <span className="text-xs font-mono text-accent">#Corporate</span>
+                  <span className="text-xs font-mono text-accent">#Global</span>
+                </div>
+              </div>
             </div>
-            <h3 className="heading-m mb-2">Consultoría</h3>
-            <p className="text-sm text-gray-400">Arquitectura y estrategia digital experta.</p>
-          </motion.div>
-
-          {/* Service: Data */}
-          <motion.div variants={item} className="bento-item" style={{ cursor: 'pointer' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
-              <Database style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
-              <ArrowUpRight style={{ width: '1.5rem', height: '1.5rem', color: '#4b5563' }} />
-            </div>
-            <h3 className="heading-m mb-2">Backend</h3>
-            <p className="text-sm text-gray-400">Estructuras de datos robustas y seguras.</p>
-          </motion.div>
-
-          {/* Experience Cell */}
-          <motion.div variants={item} className="bento-item" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-            <p className="text-5xl font-black text-accent mb-2">50+</p>
-            <p className="text-xs uppercase tracking-widest text-gray-500">Proyectos Lanzados</p>
           </motion.div>
 
           {/* Footer Cell */}
@@ -149,13 +177,13 @@ export default function Home() {
             </div>
             <p className="text-gray-500 text-sm text-center">© 2026 SkullDevs. Engineering the future, today.</p>
             <div className="flex gap-6 text-xs uppercase font-bold tracking-widest text-gray-400" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-              <a 
+              <a
                 href="#contact"
                 onClick={(e) => {
                   e.preventDefault();
                   window.dispatchEvent(new Event('openContactModal'));
                 }}
-                className="hover:text-accent transition-colors cursor-pointer" 
+                className="hover:text-accent transition-colors cursor-pointer"
                 style={{ wordBreak: 'break-all' }}
               >
                 skulldevs2020@gmail.com
