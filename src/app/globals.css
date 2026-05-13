@@ -24,7 +24,143 @@ body {
   overflow-x: hidden;
 }
 
-/* Bento Grid System */
+/* ========================================
+   NAVBAR
+   ======================================== */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  padding: 1.5rem 2rem;
+  transition: padding 0.3s ease;
+}
+
+.navbar--scrolled {
+  padding: 0.75rem 2rem;
+}
+
+.navbar__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.navbar__logo {
+  position: relative;
+  width: 9rem;
+  height: 2.5rem;
+  display: block;
+  flex-shrink: 0;
+}
+
+.navbar__desktop-links {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  font-weight: 700;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+}
+
+.navbar__link {
+  color: #9ca3af;
+  transition: color 0.3s ease;
+}
+
+.navbar__link:hover {
+  color: var(--accent);
+}
+
+.navbar__cta {
+  margin-left: 1.5rem;
+  font-size: 0.625rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.navbar__toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--foreground);
+  padding: 0.25rem;
+}
+
+.navbar__toggle-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Mobile Dropdown */
+.navbar__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 35;
+}
+
+.navbar__dropdown {
+  position: fixed;
+  top: 5.5rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  z-index: 45;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.7),
+              0 0 40px -5px rgba(204, 255, 0, 0.08);
+}
+
+.navbar__dropdown-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navbar__dropdown-link {
+  display: block;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #d1d5db;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+
+.navbar__dropdown-link:hover {
+  background: rgba(204, 255, 0, 0.08);
+  color: var(--accent);
+}
+
+.navbar__dropdown-cta {
+  display: block;
+  text-align: center;
+  margin-top: 0.75rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+  border-radius: 16px;
+}
+
+/* ========================================
+   BENTO GRID SYSTEM
+   ======================================== */
+
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -53,11 +189,31 @@ body {
 .span-2 { grid-column: span 2; }
 .span-3 { grid-column: span 3; }
 .span-4 { grid-column: span 4; }
+.row-2 { grid-row: span 2; }
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
+.text-accent { color: var(--accent); }
+.heading-l {
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.heading-m {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.text-gray-300 { color: #d1d5db; }
 .text-gray-400 { color: #9ca3af; }
 .text-gray-500 { color: #6b7280; }
 .text-gray-600 { color: #4b5563; }
@@ -65,13 +221,20 @@ a {
 .text-sm { font-size: 0.875rem; }
 .text-lg { font-size: 1.125rem; }
 .text-xl { font-size: 1.25rem; }
-.text-4xl { font-size: 2.25rem; }
-.text-5xl { font-size: 3rem; }
+.text-4xl { font-size: clamp(1.75rem, 4vw, 2.25rem); }
+.text-5xl { font-size: clamp(2.5rem, 5vw, 3rem); }
 .font-black { font-weight: 900; }
+.font-bold { font-weight: 700; }
 .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 .uppercase { text-transform: uppercase; }
 .tracking-widest { letter-spacing: 0.1em; }
 .tracking-tighter { letter-spacing: -0.05em; }
+.leading-relaxed { line-height: 1.625; }
+.text-center { text-align: center; }
+
+/* ========================================
+   SPACING
+   ======================================== */
 
 .ml-4 { margin-left: 1rem; }
 .ml-6 { margin-left: 1.5rem; }
@@ -79,11 +242,15 @@ a {
 .mb-2 { margin-bottom: 0.5rem; }
 .mb-4 { margin-bottom: 1rem; }
 .mb-6 { margin-bottom: 1.5rem; }
+.mb-auto { margin-bottom: auto; }
 .p-8 { padding: 2rem; }
-.opacity-20 { opacity: 0.2; }
-.opacity-50 { opacity: 0.5; }
-.opacity-70 { opacity: 0.7; }
-.grayscale { filter: grayscale(100%); }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+
+/* ========================================
+   SIZING
+   ======================================== */
 
 .w-40 { width: 10rem; }
 .h-10 { height: 2.5rem; }
@@ -92,44 +259,62 @@ a {
 .w-64 { width: 16rem; }
 .h-64 { height: 16rem; }
 .w-10 { width: 2.5rem; }
-.h-10 { height: 2.5rem; }
 .w-8 { width: 2rem; }
 .h-8 { height: 2rem; }
 .w-6 { width: 1.5rem; }
 .h-6 { height: 1.5rem; }
 .w-full { width: 100%; }
 .h-full { height: 100%; }
+.max-w-xl { max-width: 36rem; }
+
+/* ========================================
+   VISUAL
+   ======================================== */
+
+.opacity-20 { opacity: 0.2; }
+.opacity-50 { opacity: 0.5; }
+.opacity-70 { opacity: 0.7; }
+.grayscale { filter: grayscale(100%); }
 
 .bg-accent { background-color: var(--accent); }
 .bg-accent\/5 { background-color: rgba(204, 255, 0, 0.05); }
 .bg-black\/60 { background-color: rgba(0, 0, 0, 0.6); }
 .backdrop-blur-xl { backdrop-filter: blur(24px); }
 .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+.border-accent\/20 { border-color: rgba(204, 255, 0, 0.2); }
 
-@media (max-width: 1024px) {
-  .bento-grid { grid-template-columns: repeat(2, 1fr); }
-  .span-3, .span-4 { grid-column: span 2; }
-}
+/* ========================================
+   LAYOUT
+   ======================================== */
 
-@media (max-width: 640px) {
-  .bento-grid { grid-template-columns: 1fr; }
-  .span-2, .span-3, .span-4 { grid-column: span 1; }
-}
-
-/* Typography */
-.text-accent { color: var(--accent); }
-.heading-l { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
-.heading-m { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
-
-/* Utilities */
 .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
 .flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+.flex-wrap { flex-wrap: wrap; }
 .items-center { align-items: center; }
+.items-start { align-items: flex-start; }
 .justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
 .gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+.gap-10 { gap: 2.5rem; }
+.block { display: block; }
+.hidden { display: none; }
 .relative { position: relative; }
+.absolute { position: absolute; }
 .inset-0 { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+.z-0 { z-index: 0; }
 .z-10 { z-index: 10; }
+.overflow-hidden { overflow: hidden; }
+.object-contain { object-fit: contain; }
+.rounded-full { border-radius: 9999px; }
+
+/* ========================================
+   BUTTONS
+   ======================================== */
 
 .btn-primary {
   background: var(--accent);
@@ -141,13 +326,27 @@ a {
   letter-spacing: 0.05em;
   font-size: 0.875rem;
   transition: transform 0.2s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
 }
 
 .btn-primary:hover {
   transform: scale(1.05);
 }
 
-/* Grain Effect */
+/* ========================================
+   TRANSITIONS
+   ======================================== */
+
+.transition-all { transition: all 0.3s ease; }
+.transition-colors { transition: color 0.3s ease; }
+.transition-opacity { transition: opacity 0.3s ease; }
+
+/* ========================================
+   GRAIN EFFECT
+   ======================================== */
+
 .grain::before {
   content: "";
   position: fixed;
@@ -159,4 +358,156 @@ a {
   opacity: 0.03;
   pointer-events: none;
   z-index: 50;
+}
+
+/* ========================================
+   RESPONSIVE — TABLET (≤ 1024px)
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .span-3,
+  .span-4 {
+    grid-column: span 2;
+  }
+
+  .container {
+    padding: 0 1.5rem;
+  }
+
+  .navbar {
+    padding: 1rem 1.5rem;
+  }
+
+  .navbar--scrolled {
+    padding: 0.5rem 1.5rem;
+  }
+}
+
+/* ========================================
+   RESPONSIVE — MOBILE (≤ 768px)
+   ======================================== */
+
+@media (max-width: 768px) {
+  .navbar__desktop-links {
+    display: none;
+  }
+
+  .navbar__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navbar__inner {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .navbar__logo {
+    width: 7rem;
+    height: 2rem;
+  }
+
+  .bento-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+
+  .span-2,
+  .span-3,
+  .span-4 {
+    grid-column: span 1;
+  }
+
+  .row-2 {
+    grid-row: span 1;
+  }
+
+  .bento-item {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+
+  .bento-item:hover {
+    transform: none;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .heading-l {
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+  }
+
+  .heading-m {
+    font-size: 1.25rem;
+  }
+
+  .text-xl {
+    font-size: 1rem;
+  }
+
+  .text-4xl {
+    font-size: 1.5rem;
+  }
+
+  /* Footer adjustments */
+  .bento-item.span-4 {
+    text-align: center;
+  }
+
+  .mt-20 {
+    margin-top: 3rem;
+  }
+
+  .gap-4 {
+    gap: 0.5rem;
+  }
+}
+
+/* ========================================
+   RESPONSIVE — SMALL MOBILE (≤ 400px)
+   ======================================== */
+
+@media (max-width: 400px) {
+  .navbar {
+    padding: 0.75rem 0.75rem;
+  }
+
+  .navbar--scrolled {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .navbar__inner {
+    padding: 0.6rem 1rem;
+  }
+
+  .bento-item {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+
+  .btn-primary {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* ========================================
+   MD+ VISIBILITY HELPERS
+   ======================================== */
+
+@media (min-width: 769px) {
+  .md\:flex {
+    display: flex;
+  }
+
+  .md\:flex-row {
+    flex-direction: row;
+  }
 }

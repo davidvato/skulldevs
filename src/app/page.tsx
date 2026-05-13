@@ -32,7 +32,7 @@ export default function Home() {
   };
 
   return (
-    <main className="grain min-h-screen pt-32 pb-20">
+    <main className="grain" style={{ minHeight: '100vh', paddingTop: '7rem', paddingBottom: '5rem' }}>
       <Navbar />
 
       <div className="container">
@@ -43,65 +43,65 @@ export default function Home() {
           className="bento-grid"
         >
           {/* Hero Cell */}
-          <motion.div variants={item} className="bento-item span-3 row-2 flex flex-col justify-end">
-            <div className="absolute top-0 right-0 p-8 opacity-20">
-              <Layers className="w-64 h-64 text-[var(--accent)]" />
+          <motion.div variants={item} className="bento-item span-3 row-2" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+            <div className="absolute" style={{ top: 0, right: 0, padding: '2rem', opacity: 0.2 }}>
+              <Layers style={{ width: '12rem', height: '12rem', color: 'var(--accent)' }} />
             </div>
             <h1 className="heading-l mb-6">
-              Creamos <span className="text-accent">Software</span> <br /> que define industrias.
+              Creamos <span className="text-accent">Software</span> <br />que define industrias.
             </h1>
-            <p className="text-xl text-gray-400 max-w-xl leading-relaxed">
+            <p className="text-xl text-gray-400" style={{ maxWidth: '36rem', lineHeight: '1.6' }}>
               En SkullDevs, fusionamos ingeniería de alto nivel con diseño audaz para construir la próxima generación de productos digitales.
             </p>
           </motion.div>
 
           {/* Quick CTA Cell */}
-          <motion.div variants={item} className="bento-item flex flex-col justify-between border-accent/20 bg-accent/5">
-            <Rocket className="w-10 h-10 text-accent" />
+          <motion.div variants={item} className="bento-item border-accent/20 bg-accent/5" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Rocket style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
             <div>
               <h3 className="text-xl font-bold mb-2">Inicia hoy</h3>
               <p className="text-sm text-gray-400 mb-4">Transforma tu idea en código real.</p>
-              <button className="w-full btn-primary py-3">Contáctanos</button>
+              <a href="#contact" className="btn-primary w-full py-3" style={{ display: 'block', textAlign: 'center' }}>Contáctanos</a>
             </div>
           </motion.div>
 
           {/* Tech Stack Cell */}
-          <motion.div variants={item} className="bento-item flex flex-col justify-between">
-            <Cpu className="w-10 h-10 text-gray-500" />
+          <motion.div variants={item} className="bento-item" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Cpu style={{ width: '2.5rem', height: '2.5rem', color: '#6b7280' }} />
             <div>
-              <p className="text-xs uppercase tracking-tighter text-gray-500 mb-1">Stack</p>
+              <p className="text-xs uppercase tracking-tighter text-gray-500 mb-2" style={{ marginBottom: '0.25rem' }}>Stack</p>
               <p className="text-lg font-bold">Next.js / Node / Cloud</p>
             </div>
           </motion.div>
 
           {/* Service: Web */}
-          <motion.div variants={item} className="bento-item group">
-            <div className="flex justify-between items-start mb-12">
-              <Globe className="w-10 h-10 text-accent" />
-              <ArrowUpRight className="w-6 h-6 text-gray-600 group-hover:text-accent transition-colors" />
+          <motion.div variants={item} className="bento-item" style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+              <Globe style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
+              <ArrowUpRight style={{ width: '1.5rem', height: '1.5rem', color: '#4b5563' }} />
             </div>
             <h3 className="heading-m mb-2">Web Dev</h3>
             <p className="text-sm text-gray-400">Interfaces ultra-rápidas y escalables.</p>
           </motion.div>
 
           {/* Case Study: MatchUp Sports */}
-          <motion.div id="casos" variants={item} className="bento-item span-2 row-2 flex flex-col overflow-hidden group">
-            <div className="absolute inset-0 z-0 bg-gradient-to-br from-black to-accent/10 opacity-50 group-hover:opacity-70 transition-opacity" />
-            <div className="relative z-10 h-full flex flex-col">
-              <div className="flex justify-between items-start mb-auto">
-                <div className="bg-accent text-black px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+          <motion.div id="casos" variants={item} className="bento-item span-2 row-2" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'pointer' }}>
+            <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(135deg, #000, rgba(204, 255, 0, 0.1))', opacity: 0.5, transition: 'opacity 0.3s ease' }} />
+            <div className="relative z-10 h-full" style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'auto' }}>
+                <div className="bg-accent" style={{ color: '#000', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                   Caso de Éxito
                 </div>
                 <a href="https://www.matchupsports.net/" target="_blank" rel="noopener noreferrer">
-                  <ArrowUpRight className="w-8 h-8 text-white hover:text-accent transition-colors" />
+                  <ArrowUpRight style={{ width: '2rem', height: '2rem', color: '#fff' }} />
                 </a>
               </div>
-              <div className="mt-20">
+              <div style={{ marginTop: '3rem' }}>
                 <h3 className="text-4xl font-black mb-4 uppercase">MatchUp Sports</h3>
-                <p className="text-gray-300 leading-relaxed mb-6">
+                <p className="text-gray-300 leading-relaxed mb-6" style={{ fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>
                   Revolucionamos la gestión de torneos deportivos con una plataforma en tiempo real. Implementamos una arquitectura escalable que soporta miles de usuarios simultáneos, integrando sistemas de puntuación en vivo y gestión de brackets automatizada.
                 </p>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                   <span className="text-xs font-mono text-accent">#Fullstack</span>
                   <span className="text-xs font-mono text-accent">#Realtime</span>
                   <span className="text-xs font-mono text-accent">#Scalable</span>
@@ -111,34 +111,34 @@ export default function Home() {
           </motion.div>
 
           {/* Service: Consulting */}
-          <motion.div variants={item} className="bento-item group">
-            <div className="flex justify-between items-start mb-12">
-              <Lightbulb className="w-10 h-10 text-accent" />
-              <ArrowUpRight className="w-6 h-6 text-gray-600 group-hover:text-accent transition-colors" />
+          <motion.div variants={item} className="bento-item" style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+              <Lightbulb style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
+              <ArrowUpRight style={{ width: '1.5rem', height: '1.5rem', color: '#4b5563' }} />
             </div>
             <h3 className="heading-m mb-2">Consultoría</h3>
             <p className="text-sm text-gray-400">Arquitectura y estrategia digital experta.</p>
           </motion.div>
 
           {/* Service: Data */}
-          <motion.div variants={item} className="bento-item group">
-            <div className="flex justify-between items-start mb-12">
-              <Database className="w-10 h-10 text-accent" />
-              <ArrowUpRight className="w-6 h-6 text-gray-600 group-hover:text-accent transition-colors" />
+          <motion.div variants={item} className="bento-item" style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+              <Database style={{ width: '2.5rem', height: '2.5rem', color: 'var(--accent)' }} />
+              <ArrowUpRight style={{ width: '1.5rem', height: '1.5rem', color: '#4b5563' }} />
             </div>
             <h3 className="heading-m mb-2">Backend</h3>
             <p className="text-sm text-gray-400">Estructuras de datos robustas y seguras.</p>
           </motion.div>
 
           {/* Experience Cell */}
-          <motion.div variants={item} className="bento-item flex flex-col justify-center items-center text-center">
+          <motion.div variants={item} className="bento-item" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
             <p className="text-5xl font-black text-accent mb-2">50+</p>
             <p className="text-xs uppercase tracking-widest text-gray-500">Proyectos Lanzados</p>
           </motion.div>
 
           {/* Footer Cell */}
-          <motion.div variants={item} className="bento-item span-4 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="relative w-40 h-8 opacity-50">
+          <motion.div variants={item} className="bento-item span-4" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', gap: '2rem' }}>
+            <div className="relative" style={{ width: '10rem', height: '2rem', opacity: 0.5 }}>
               <Image
                 src="/logo.png"
                 alt="SkullDevs"
@@ -147,10 +147,9 @@ export default function Home() {
                 style={{ filter: 'invert(1)', transform: 'scale(1.3)' }}
               />
             </div>
-            <p className="text-gray-500 text-sm">© 2026 SkullDevs. Engineering the future, today.</p>
-            <div className="flex gap-6 text-xs uppercase font-bold tracking-widest text-gray-400">
-              <a className="hover:text-accent transition-colors">skulldevs2020@gmail.com</a>
-
+            <p className="text-gray-500 text-sm text-center">© 2026 SkullDevs. Engineering the future, today.</p>
+            <div className="flex gap-6 text-xs uppercase font-bold tracking-widest text-gray-400" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+              <a href="mailto:skulldevs2020@gmail.com" className="transition-colors" style={{ wordBreak: 'break-all' }}>skulldevs2020@gmail.com</a>
             </div>
           </motion.div>
         </motion.div>
