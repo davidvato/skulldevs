@@ -62,7 +62,8 @@ export default function Navbar() {
                 <button 
                   key={link.href} 
                   onClick={() => window.dispatchEvent(new Event('openTeamModal'))}
-                  className="navbar__link bg-transparent border-none cursor-pointer uppercase tracking-widest font-bold text-[0.625rem]"
+                  className="btn-primary"
+                  style={{ padding: '0.75rem 1.5rem', fontSize: '0.75rem' }}
                 >
                   {link.label}
                 </button>
@@ -147,7 +148,8 @@ export default function Navbar() {
                           handleLinkClick();
                           window.dispatchEvent(new Event('openTeamModal'));
                         }}
-                        className="navbar__dropdown-link w-full text-left bg-transparent border-none"
+                        className="btn-primary w-full text-center mt-2"
+                        style={{ padding: '1rem', fontSize: '0.875rem' }}
                       >
                         {link.label}
                       </button>
