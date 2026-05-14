@@ -8,6 +8,7 @@ import { Menu, X } from 'lucide-react';
 
 const navLinks = [
   { href: '#services', label: 'Servicios' },
+  { href: '#team', label: 'The Team' },
   { href: '#casos', label: 'Casos de Éxito' },
 ];
 
@@ -57,9 +58,19 @@ export default function Navbar() {
           {/* Desktop Links */}
           <div className="navbar__desktop-links">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="navbar__link">
-                {link.label}
-              </Link>
+              link.href === '#team' ? (
+                <button 
+                  key={link.href} 
+                  onClick={() => window.dispatchEvent(new Event('openTeamModal'))}
+                  className="navbar__link bg-transparent border-none cursor-pointer uppercase tracking-widest font-bold text-[0.625rem]"
+                >
+                  {link.label}
+                </button>
+              ) : (
+                <Link key={link.href} href={link.href} className="navbar__link">
+                  {link.label}
+                </Link>
+              )
             ))}
             <button onClick={() => window.dispatchEvent(new Event('openContactModal'))} className="btn-primary navbar__cta">
               Hablemos
@@ -130,13 +141,25 @@ export default function Navbar() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 + i * 0.08, duration: 0.3 }}
                   >
-                    <Link
-                      href={link.href}
-                      className="navbar__dropdown-link"
-                      onClick={handleLinkClick}
-                    >
-                      {link.label}
-                    </Link>
+                    {link.href === '#team' ? (
+                      <button
+                        onClick={() => {
+                          handleLinkClick();
+                          window.dispatchEvent(new Event('openTeamModal'));
+                        }}
+                        className="navbar__dropdown-link w-full text-left bg-transparent border-none"
+                      >
+                        {link.label}
+                      </button>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="navbar__dropdown-link"
+                        onClick={handleLinkClick}
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </motion.div>
                 ))}
                 <motion.div

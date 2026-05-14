@@ -11,7 +11,8 @@ import {
   ArrowUpRight,
   Database,
   Cpu,
-  Layers
+  Layers,
+  User
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
@@ -65,11 +66,6 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Experience Cell */}
-          <motion.div variants={item} className="bento-item" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-            <p className="text-5xl font-black text-accent mb-2">50+</p>
-            <p className="text-xs uppercase tracking-widest text-gray-500">Proyectos Lanzados</p>
-          </motion.div>
 
           {/* Service: Web */}
           <motion.div variants={item} className="bento-item" style={{ cursor: 'pointer' }}>
