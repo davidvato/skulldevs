@@ -113,7 +113,7 @@ export default function ContactModal() {
               <div className="mb-8">
                 <h2 className="heading-m mb-2">Hablemos de tu proyecto</h2>
                 <p className="text-gray-400 text-sm">
-                  Déjanos tus datos y te contactaremos a la brevedad para aterrizar tus ideas.
+                  Cuéntanos cómo trabaja tu empresa hoy y te mostraremos el camino para automatizarla.
                 </p>
               </div>
 

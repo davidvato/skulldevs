@@ -7,9 +7,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const navLinks = [
-  { href: '#services', label: 'Servicios' },
+  { href: '/#servicios', label: 'Servicios' },
+  { href: '/#metodo', label: 'Método' },
+  { href: '/precios', label: 'Precios' },
   { href: '#team', label: 'The Team' },
-  { href: '#casos', label: 'Casos de Éxito' },
+  { href: '/#casos', label: 'Casos de Éxito' },
 ];
 
 export default function Navbar() {
@@ -62,11 +64,14 @@ export default function Navbar() {
                 <button 
                   key={link.href} 
                   onClick={() => window.dispatchEvent(new Event('openTeamModal'))}
-                  className="btn-primary"
-                  style={{ padding: '0.75rem 1.5rem', fontSize: '0.75rem' }}
+                  className="btn-ghost"
                 >
                   {link.label}
                 </button>
+              ) : link.href.startsWith('/#') ? (
+                <a key={link.href} href={link.href} className="navbar__link">
+                  {link.label}
+                </a>
               ) : (
                 <Link key={link.href} href={link.href} className="navbar__link">
                   {link.label}
@@ -148,19 +153,19 @@ export default function Navbar() {
                           handleLinkClick();
                           window.dispatchEvent(new Event('openTeamModal'));
                         }}
-                        className="btn-primary w-full text-center mt-2"
+                        className="btn-ghost w-full text-center mt-2"
                         style={{ padding: '1rem', fontSize: '0.875rem' }}
                       >
                         {link.label}
                       </button>
                     ) : (
-                      <Link
+                      <a
                         href={link.href}
                         className="navbar__dropdown-link"
                         onClick={handleLinkClick}
                       >
                         {link.label}
-                      </Link>
+                      </a>
                     )}
                   </motion.div>
                 ))}

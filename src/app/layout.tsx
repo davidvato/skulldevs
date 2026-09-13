@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SkullDevs | Engineering the Future",
-  description: "Boutique software development agency specializing in high-performance digital products and technical consulting.",
+  title: "SkullDevs | Transformación Digital Automatizada",
+  description: "Transformación digital para tu empresa: ¿todavía corres en Excel? Te transformamos a Power BI y automatizamos tus procesos para que decidas con datos reales, en tiempo real.",
 };
 
 export default function RootLayout({
