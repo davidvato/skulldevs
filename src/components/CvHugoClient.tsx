@@ -23,7 +23,7 @@ const proyectosIndependientes = [
 ];
 
 const proyectosMarcas = [
-  { marca: "Dairy Queen", url: "https://www.dairyqueen.com", tipo: "Participación en proyectos digitales, dinámicas en línea a través del sitio web para eventos especiales, mantenimiento y desarrollo web ejecutados dentro de un entorno de agencia, aportando capacidades técnicas y de desarrollo web." },
+  { marca: "Dairy Queen", url: "https://dairyqueen.com.mx/es-mx/", tipo: "Participación en proyectos digitales, dinámicas en línea a través del sitio web para eventos especiales, mantenimiento y desarrollo web ejecutados dentro de un entorno de agencia, aportando capacidades técnicas y de desarrollo web." },
   { marca: "Sirloin Stockade", url: "https://sirloinstockade.mx", tipo: "Desarrollo web y proyectos digitales relacionados con la presencia online de la marca. Dinámica en línea de rifa de un auto con validación de SEGOB." },
   { marca: "Wings Army", url: "https://wingsarmy.mx", tipo: "Participación en proyectos digitales/web y trabajo técnico relacionado con dinámicas en línea a través de redes sociales." },
   { marca: "COPRESET.com", url: "https://copreset.com", tipo: "Desarrollo web y trabajo sobre plataformas digitales." },
