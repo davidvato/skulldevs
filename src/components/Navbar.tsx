@@ -48,7 +48,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="navbar__logo" onClick={handleLinkClick}>
             <Image
-              src="/skulldevs/logo.png"
+              src="/logo.png"
               alt="SkullDevs Logo"
               fill
               className="object-contain"
