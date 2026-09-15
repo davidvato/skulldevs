@@ -414,7 +414,7 @@ export default function Home() {
             <Reveal className="bento-item span-4" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', gap: '2rem' }}>
               <div className="relative" style={{ width: '10rem', height: '2rem', opacity: 0.5 }}>
                 <Image
-                  src="/logo.png"
+                  src="/skulldevs/logo.png"
                   alt="SkullDevs"
                   fill
                   className="object-contain grayscale"

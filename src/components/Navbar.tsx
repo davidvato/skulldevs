@@ -48,7 +48,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="navbar__logo" onClick={handleLinkClick}>
             <Image
-              src="/logo.png"
+              src="/skulldevs/logo.png"
               alt="SkullDevs Logo"
               fill
               className="object-contain"
@@ -68,10 +68,6 @@ export default function Navbar() {
                 >
                   {link.label}
                 </button>
-              ) : link.href.startsWith('/#') ? (
-                <a key={link.href} href={link.href} className="navbar__link">
-                  {link.label}
-                </a>
               ) : (
                 <Link key={link.href} href={link.href} className="navbar__link">
                   {link.label}
@@ -159,13 +155,13 @@ export default function Navbar() {
                         {link.label}
                       </button>
                     ) : (
-                      <a
+                      <Link
                         href={link.href}
                         className="navbar__dropdown-link"
                         onClick={handleLinkClick}
                       >
                         {link.label}
-                      </a>
+                      </Link>
                     )}
                   </motion.div>
                 ))}
