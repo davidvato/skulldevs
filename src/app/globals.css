@@ -1039,6 +1039,252 @@ a {
 }
 
 /* ========================================
+   CV /cv-hugobb
+   ======================================== */
+
+.cv-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cv-role {
+  color: #d1d5db;
+  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cv-tagline {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.cv-section-title {
+  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.cv-p {
+  color: #cbd5e1;
+  line-height: 1.75;
+  font-size: 0.98rem;
+}
+
+.cv-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.cv-row {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 1.5rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.cv-row:last-child {
+  border-bottom: none;
+}
+
+.cv-label {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.cv-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(204, 255, 0, 0.35);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.cv-link:hover {
+  color: var(--accent-2);
+  text-decoration-color: var(--accent-2);
+}
+
+.cv-value {
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.cv-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.cv-job {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cv-job-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cv-period {
+  color: var(--accent-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.cv-job-rol {
+  color: #f1f5f9;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.cv-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-left: 1.1rem;
+}
+
+.cv-bullets li {
+  color: #b6c2d1;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  list-style: square;
+}
+
+.cv-bullets li::marker {
+  color: var(--accent);
+}
+
+.cv-mini-title {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.75rem;
+}
+
+.cv-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.cv-foot {
+  color: #6b7280;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  padding-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .cv-row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .cv-two-col {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* ========================================
+   IMPRESIÓN DEL CV
+   ======================================== */
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  .grain::before {
+    display: none !important;
+  }
+
+  .navbar,
+  .cv-no-print {
+    display: none !important;
+  }
+
+  main {
+    padding-top: 0 !important;
+  }
+
+  .cv-wrap {
+    gap: 0.75rem;
+  }
+
+  .bento-item {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cv-row,
+  .cv-p,
+  .cv-role,
+  .cv-tagline,
+  .cv-value,
+  .cv-bullets li,
+  .cv-mini-title,
+  .cv-foot {
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+  }
+
+  .cv-label,
+  .cv-section-title {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    background: none !important;
+  }
+
+  .cv-period {
+    color: #444444 !important;
+    -webkit-text-fill-color: #444444 !important;
+  }
+
+  .cv-bullets li::marker {
+    color: #111111 !important;
+  }
+
+  .chip {
+    border-color: #d1d5db !important;
+    color: #111111 !important;
+    background: #ffffff !important;
+    -webkit-text-fill-color: #111111 !important;
+  }
+}
+
+/* ========================================
    ACCESSIBILITY
    ======================================== */
 
