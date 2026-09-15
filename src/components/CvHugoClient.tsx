@@ -145,7 +145,7 @@ export default function CvHugoClient() {
             </div>
 
             <h2 className="cv-role" style={{ marginBottom: '0.75rem' }}>
-              Senior Project Manager | Technical Project Manager | Product Owner | Business Analyst
+              Senior Project Manager | Web Developer Frontend y Backend
             </h2>
             <p className="cv-tagline" style={{ marginBottom: '1.5rem' }}>
               Transformación Digital | eCommerce | Agile / SAFe | IA y Automatización | Entrega Tecnológica | Arquitectura Técnica
