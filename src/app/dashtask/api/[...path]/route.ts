@@ -48,6 +48,10 @@ const routes: [string, string, ...Fn[]][] = [
   ['POST', '/intakes/:id/triage', auth as Fn, IntakeController.triage],
   ['POST', '/intakes/:id/perspective', auth as Fn, IntakeController.perspective],
   ['POST', '/intakes/:id/estimate', auth as Fn, IntakeController.estimate],
+  ['POST', '/intakes/:id/requirements', auth as Fn, IntakeController.addRequirement],
+  ['PATCH', '/intakes/:id/requirements/:key/meta', auth as Fn, IntakeController.updateRequirement],
+  ['PATCH', '/intakes/:id/requirements/:key', auth as Fn, IntakeController.setRequirement],
+  ['DELETE', '/intakes/:id/requirements/:key', auth as Fn, IntakeController.removeRequirement],
   ['DELETE', '/intakes/:id', auth as Fn, IntakeController.remove],
 
   ['GET', '/tasks', auth as Fn, TaskController.list],
