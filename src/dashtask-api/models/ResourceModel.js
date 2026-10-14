@@ -16,10 +16,19 @@ export const ResourceModel = {
       id,
       projectId: payload.projectId,
       userId: payload.userId,
+      sprintId: payload.sprintId || null,
       addedBy: payload.addedBy || '',
       addedAt: now(),
     };
     return col().insert(doc);
+  },
+
+  update: (id, patch) => {
+    const doc = col().findById(id);
+    if (!doc) return null;
+    const next = { ...doc };
+    if ('sprintId' in patch) next.sprintId = patch.sprintId || null;
+    return col().update(id, next);
   },
 
   remove: (id) => col().remove(id),

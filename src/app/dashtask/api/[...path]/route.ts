@@ -93,6 +93,7 @@ const routes: [string, string, ...Fn[]][] = [
   ['GET', '/resources', auth as Fn, ResourceController.list],
   ['GET', '/resources/candidates', auth as Fn, ResourceController.candidates],
   ['POST', '/resources', auth as Fn, ResourceController.add],
+  ['PATCH', '/resources/:id', auth as Fn, ResourceController.update],
   ['DELETE', '/resources/:id', auth as Fn, ResourceController.remove],
 
   ['GET', '/changes', auth as Fn, requireRoles(...(ChangeController.viewRoles as string[])), ChangeController.list],

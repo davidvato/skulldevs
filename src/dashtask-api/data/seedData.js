@@ -2,7 +2,7 @@ import { DEMO_PASSWORD } from '../config/paths.js';
 import { buildChecklist } from '../config/taskFlow.js';
 
 // v9: equipos gestionables por admin (ecosistemas) + control de cambios de entregas (motivos).
-export const SEED_VERSION = 9;
+export const SEED_VERSION = 10;
 
 const USER = (id, name, email, role, opts = {}) => ({
   id,
@@ -1989,9 +1989,9 @@ export function buildSeed() {
       // Andrés Gómez (USR-004) → PCD, CORE · Daniela Ortiz (USR-020) → ANA, DAT, BI
       // · Roberto Salas (USR-021) → BAN, CAN. Algunos devs son compartidos.
       // --- Andrés Gómez (PM1) ---
-      { id: 'RES-001', projectId: 'PRJ-001', userId: 'USR-009', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-002', projectId: 'PRJ-001', userId: 'USR-016', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-003', projectId: 'PRJ-001', userId: 'USR-025', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-001', projectId: 'PRJ-001', userId: 'USR-009', sprintId: 'SPR-001', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-002', projectId: 'PRJ-001', userId: 'USR-016', sprintId: 'SPR-002', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-003', projectId: 'PRJ-001', userId: 'USR-025', sprintId: 'SPR-002', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
       { id: 'RES-004', projectId: 'PRJ-002', userId: 'USR-012', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
       { id: 'RES-005', projectId: 'PRJ-002', userId: 'USR-011', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
       // --- Daniela Ortiz (PM2) ---

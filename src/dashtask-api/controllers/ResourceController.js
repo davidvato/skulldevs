@@ -3,7 +3,7 @@ import { UserModel } from '../models/UserModel.js';
 import { ProjectModel } from '../models/ProjectModel.js';
 import { SprintModel } from '../models/SprintModel.js';
 import { TaskModel } from '../models/TaskModel.js';
-import { availabilityForSprints, totalsFromAvailability, spPerDayFor } from '../services/CapacityService.js';
+import { availabilityForSprints, totalsFromAvailability, spPerDayFor, sprintCapacity, assignedSp } from '../services/CapacityService.js';
 import { getRole } from '../config/roles.js';
 
 const ALLOWED_ROLES = ['product_manager', 'rte', 'lpm'];
@@ -65,6 +65,7 @@ export const ResourceController = {
           roleLabel: getRole(user.role)?.short || user.role,
           avatar: user.avatar,
           inferred: inferredFlag,
+          sprintId: typeof docOrUserId === 'string' ? null : docOrUserId.sprintId || null,
           sprints: sprints.map((s) => s.id),
           availability,
           totals,
@@ -77,6 +78,32 @@ export const ResourceController = {
         ...inferred.map((uid) => build(uid, true)),
       ].filter(Boolean);
 
+      // Roster por sprint: qué recursos forman el equipo de cada sprint y su capacidad agregada.
+      const roster = sprints.map((s) => {
+        const registeredIds = registered.filter((r) => r.sprintId === s.id).map((r) => r.userId);
+        const inferredIds = projectTasks
+          .filter((t) => t.sprintId === s.id && t.assigneeId)
+          .map((t) => t.assigneeId);
+        const userIds = [...new Set([...registeredIds, ...inferredIds])];
+        const members = userIds
+          .map((uid) => UserModel.findById(uid))
+          .filter(Boolean)
+          .map((u) => ({ id: u.id, name: u.name, avatar: u.avatar, role: u.role, roleLabel: getRole(u.role)?.short || u.role }));
+        const cap = sprintCapacity(s, project);
+        const capacity = userIds.length * cap;
+        const assigned = assignedSp(projectTasks, { sprintId: s.id });
+        return {
+          sprint: { id: s.id, name: s.name, status: s.status, startDate: s.startDate, endDate: s.endDate },
+          userIds,
+          members,
+          capacity,
+          assigned,
+          free: capacity - assigned,
+          over: capacity - assigned < 0,
+          pct: capacity ? Math.round((assigned / capacity) * 100) : 0,
+        };
+      });
+
       return {
         project: {
           id: project.id,
@@ -88,6 +115,7 @@ export const ResourceController = {
           spPerDay: spPerDayFor(project),
         },
         sprints,
+        roster,
         resources,
       };
     });
@@ -127,18 +155,41 @@ export const ResourceController = {
     return res.json({ project: { id: project.id, name: project.name }, spPerDay: spPerDayFor(project), candidates });
   },
 
-  /** Registra un recurso disponible para el proyecto. */
+  /** Registra un recurso disponible para el proyecto, opcionalmente en un sprint concreto. */
   add(req, res) {
     if (!canManage(req, res)) return;
-    const { projectId, userId } = req.body || {};
+    const { projectId, userId, sprintId = null } = req.body || {};
     if (!projectId || !userId) return res.status(400).json({ error: 'projectId y userId son obligatorios.' });
-    if (!ProjectModel.findById(projectId)) return res.status(404).json({ error: 'Proyecto no encontrado.' });
+    const project = ProjectModel.findById(projectId);
+    if (!project) return res.status(404).json({ error: 'Proyecto no encontrado.' });
     if (!UserModel.findById(userId)) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    if (sprintId) {
+      const sprint = SprintModel.findById(sprintId);
+      if (!sprint || sprint.projectId !== projectId) {
+        return res.status(400).json({ error: 'El sprint no pertenece al proyecto.' });
+      }
+    }
     if (ResourceModel.findOne(projectId, userId)) {
       return res.status(409).json({ error: 'El recurso ya está registrado en este proyecto.' });
     }
-    const doc = ResourceModel.create({ projectId, userId, addedBy: req.user.name });
+    const doc = ResourceModel.create({ projectId, userId, sprintId, addedBy: req.user.name });
     return res.status(201).json({ resource: doc });
+  },
+
+  /** Mueve/asinga un recurso registrado a un sprint del proyecto (o lo deja sin sprint con null). */
+  update(req, res) {
+    if (!canManage(req, res)) return;
+    const resource = ResourceModel.findById(req.params.id);
+    if (!resource) return res.status(404).json({ error: 'Recurso no encontrado.' });
+    const { sprintId = null } = req.body || {};
+    if (sprintId) {
+      const sprint = SprintModel.findById(sprintId);
+      if (!sprint || sprint.projectId !== resource.projectId) {
+        return res.status(400).json({ error: 'El sprint no pertenece al proyecto del recurso.' });
+      }
+    }
+    const doc = ResourceModel.update(resource.id, { sprintId });
+    return res.json({ resource: doc });
   },
 
   remove(req, res) {
