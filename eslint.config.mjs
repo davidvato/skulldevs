@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored DashTask SPA build + ported server logic:
+    "public/dashtask/**",
+    "src/dashtask-api/**",
   ]),
 ]);
 
