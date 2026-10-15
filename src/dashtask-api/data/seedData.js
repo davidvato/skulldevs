@@ -1,8 +1,14 @@
 import { DEMO_PASSWORD } from '../config/paths.js';
-import { buildChecklist } from '../config/taskFlow.js';
+import { buildChecklist, computeWsjf, priorityFromWsjf } from '../config/taskFlow.js';
+import { seedRoles } from '../config/roleDefaults.js';
+import { glossaryDefaults } from '../config/glossaryDefaults.js';
 
 // v9: equipos gestionables por admin (ecosistemas) + control de cambios de entregas (motivos).
-export const SEED_VERSION = 10;
+// v13: límites WIP configurables (admin) + orden manual de listados (drag & drop).
+// v14: priorización WSJF automática (entradas de costo del retraso + categoría derivada).
+// v15: medición de iteraciones por PI + voto de confianza (fist of five) por fase.
+// v16: catálogo de roles editable (Admin) + glosario editable + alta de usuarios.
+export const SEED_VERSION = 16;
 
 const USER = (id, name, email, role, opts = {}) => ({
   id,
@@ -161,6 +167,22 @@ export function buildSeed() {
       ],
       risks: [],
     },
+  ];
+
+  const confidenceVotes = [
+    // Fase de planificación del PI en curso (promedio 4.2, como el KPI del dashboard).
+    { id: 'CV-0001', piId: 'PI-2026.1', phase: 'planning', userId: 'USR-003', userName: 'Sofía Herrera', role: 'rte', value: 4, comment: 'Dependencia con Seguridad es el mayor riesgo.', at: '2026-01-06T09:30:00Z' },
+    { id: 'CV-0002', piId: 'PI-2026.1', phase: 'planning', userId: 'USR-001', userName: 'Laura Méndez', role: 'lpm', value: 4, comment: 'Objetivos alineados al portafolio.', at: '2026-01-06T09:34:00Z' },
+    { id: 'CV-0003', piId: 'PI-2026.1', phase: 'planning', userId: 'USR-004', userName: 'Andrés Gómez', role: 'product_manager', value: 4, comment: '', at: '2026-01-06T09:36:00Z' },
+    { id: 'CV-0004', piId: 'PI-2026.1', phase: 'planning', userId: 'USR-006', userName: 'Marta Ruiz', role: 'business_owner', value: 4, comment: '', at: '2026-01-06T09:41:00Z' },
+    { id: 'CV-0005', piId: 'PI-2026.1', phase: 'planning', userId: 'USR-005', userName: 'Diego Fernández', role: 'system_architect', value: 5, comment: 'La plataforma soporta la carga prevista.', at: '2026-01-06T09:45:00Z' },
+    // PI cerrado: voto final en la revisión (promedio 4.5).
+    { id: 'CV-0006', piId: 'PI-2025.4', phase: 'review', userId: 'USR-003', userName: 'Sofía Herrera', role: 'rte', value: 4, comment: 'Se cumplió el objetivo del portal de cliente.', at: '2025-12-19T16:00:00Z' },
+    { id: 'CV-0007', piId: 'PI-2025.4', phase: 'review', userId: 'USR-001', userName: 'Laura Méndez', role: 'lpm', value: 4, comment: '', at: '2025-12-19T16:03:00Z' },
+    { id: 'CV-0008', piId: 'PI-2025.4', phase: 'review', userId: 'USR-004', userName: 'Andrés Gómez', role: 'product_manager', value: 5, comment: '', at: '2025-12-19T16:05:00Z' },
+    { id: 'CV-0009', piId: 'PI-2025.4', phase: 'review', userId: 'USR-006', userName: 'Marta Ruiz', role: 'business_owner', value: 5, comment: 'Alto valor de negocio entregado.', at: '2025-12-19T16:08:00Z' },
+    { id: 'CV-0010', piId: 'PI-2025.4', phase: 'review', userId: 'USR-005', userName: 'Diego Fernández', role: 'system_architect', value: 4, comment: '', at: '2025-12-19T16:10:00Z' },
+    { id: 'CV-0011', piId: 'PI-2025.4', phase: 'review', userId: 'USR-007', userName: 'Javier Torres', role: 'scrum_master', value: 5, comment: '', at: '2025-12-19T16:12:00Z' },
   ];
 
   const intakes = [
@@ -1905,6 +1927,62 @@ export function buildSeed() {
     ],
   };
 
+  /* ---------------- Backlog adicional por proyecto (para planificación de sprints) ---------------- */
+  const backlogSeed = [
+    { project: 'PRJ-001', epic: 'EPC-001', title: 'Exportar flujo de onboarding a CSV', type: 'Feature', pts: 3, prio: 'Media', wsjf: 5.2 },
+    { project: 'PRJ-001', epic: 'EPC-001', title: 'Onboarding multi-idioma (ES/EN/PT)', type: 'Feature', pts: 8, prio: 'Media', wsjf: 5.8 },
+    { project: 'PRJ-001', epic: 'EPC-002', title: 'Centro de preferencias de notificaciones', type: 'Feature', pts: 5, prio: 'Alta', wsjf: 7.1 },
+    { project: 'PRJ-002', epic: 'EPC-003', title: 'Auditoría de llamadas a la API de pagos', type: 'Enabler', pts: 5, prio: 'Alta', wsjf: 7.0 },
+    { project: 'PRJ-002', epic: 'EPC-003', title: 'Idempotencia en reintentos de pago', type: 'Feature', pts: 8, prio: 'Alta', wsjf: 8.4 },
+    { project: 'PRJ-002', epic: 'EPC-005', title: 'Panel de conciliación diaria', type: 'Feature', pts: 5, prio: 'Media', wsjf: 5.5 },
+    { project: 'PRJ-003', epic: 'EPC-004', title: 'Alertas de latencia p95 por servicio', type: 'Feature', pts: 5, prio: 'Alta', wsjf: 7.2 },
+    { project: 'PRJ-003', epic: 'EPC-004', title: 'Retención de logs configurable por entorno', type: 'Enabler', pts: 3, prio: 'Media', wsjf: 4.5 },
+    { project: 'PRJ-003', epic: 'EPC-004', title: 'Dashboard de errores por release', type: 'Feature', pts: 5, prio: 'Media', wsjf: 6.0 },
+    { project: 'PRJ-004', epic: 'EPC-006', title: 'Catálogo de datos con linaje', type: 'Feature', pts: 8, prio: 'Media', wsjf: 6.5 },
+    { project: 'PRJ-004', epic: 'EPC-006', title: 'Particionado de tablas históricas', type: 'Enabler', pts: 5, prio: 'Media', wsjf: 5.0 },
+    { project: 'PRJ-004', epic: 'EPC-007', title: 'API de métricas self-service', type: 'Feature', pts: 5, prio: 'Alta', wsjf: 7.5 },
+    { project: 'PRJ-005', epic: 'EPC-008', title: 'Reporte de adopción por segmento', type: 'Feature', pts: 5, prio: 'Media', wsjf: 6.0 },
+    { project: 'PRJ-005', epic: 'EPC-008', title: 'Exportación programada de reportes', type: 'Feature', pts: 3, prio: 'Baja', wsjf: 4.2 },
+    { project: 'PRJ-005', epic: 'EPC-008', title: 'Catálogo de KPIs unificado', type: 'Enabler', pts: 8, prio: 'Media', wsjf: 6.0 },
+    { project: 'PRJ-006', epic: 'EPC-009', title: 'Modo offline para consultas básicas', type: 'Feature', pts: 8, prio: 'Alta', wsjf: 7.4 },
+    { project: 'PRJ-006', epic: 'EPC-009', title: 'Conciliación de notificaciones push', type: 'Feature', pts: 5, prio: 'Media', wsjf: 5.5 },
+    { project: 'PRJ-006', epic: 'EPC-009', title: 'Analítica de embudo móvil', type: 'Enabler', pts: 3, prio: 'Media', wsjf: 4.8 },
+    { project: 'PRJ-007', epic: 'EPC-010', title: 'Dashboard de ventas por engagement', type: 'Feature', pts: 5, prio: 'Media', wsjf: 6.2 },
+    { project: 'PRJ-007', epic: 'EPC-010', title: 'Resumen ejecutivo de capacidades', type: 'Feature', pts: 3, prio: 'Baja', wsjf: 4.0 },
+    { project: 'PRJ-007', epic: 'EPC-010', title: 'Workflow de aprobación de presupuesto', type: 'Enabler', pts: 8, prio: 'Media', wsjf: 6.0 },
+  ];
+
+  backlogSeed.forEach((spec, i) => {
+    const id = `TSK-${String(30 + i).padStart(3, '0')}`;
+    taskLinks[id] = { projectId: spec.project, epicId: spec.epic };
+    tasks.push({
+      id,
+      title: spec.title,
+      description: `Trabajo en backlog para ${spec.project}. Pendiente de planificación en sprint.`,
+      type: spec.type,
+      status: 'backlog',
+      class: 'Standard',
+      priority: spec.prio,
+      wsjf: spec.wsjf,
+      storyPoints: spec.pts,
+      assigneeId: '',
+      assignee: 'Sin asignar',
+      reporterId: 'USR-008',
+      team: 'Nébula',
+      valueStream: 'Cliente Digital',
+      pi: 'PI-2026.1',
+      iteration: 'Backlog',
+      level: 'team',
+      ac: [],
+      dependencies: [],
+      labels: ['#backlog'],
+      blockedReason: '',
+      createdAt: '2026-01-05T09:00:00Z',
+      updatedAt: '2026-01-05T09:00:00Z',
+      dueDate: '',
+    });
+  });
+
   tasks.forEach((t) => {
     const link = taskLinks[t.id] || {};
     t.projectId = link.projectId || null;
@@ -1916,6 +1994,13 @@ export function buildSeed() {
     t.sprintId = sprintLinks[t.id] || null;
     t.checklist = buildChecklist(t.status, doneKeys[t.id] || []);
     t.auditLog = buildAuditTrail(t, users);
+    // Priorización automática: cada tarea lleva sus entradas de WSJF (Costo del
+    // retraso) y su prioridad se deriva del WSJF; el Tamaño es Story Points.
+    t.wsjfInput = deriveWsjfInput(t.wsjf, t.storyPoints);
+    if (t.wsjfInput) {
+      t.wsjf = computeWsjf({ ...t.wsjfInput, jobSize: t.storyPoints });
+      t.priority = priorityFromWsjf(t.wsjf);
+    }
   });
 
   /* ---------------- Variables de estado globales (demo) ---------------- */
@@ -1951,7 +2036,9 @@ export function buildSeed() {
   return {
     schemaVersion: SEED_VERSION,
     users, programIncrements, intakes, tasks, ceremonies,
-    projects, epics, sprints,
+    projects, epics, sprints, confidenceVotes,
+    roles: seedRoles(),
+    glossary: [{ id: 'default', ...glossaryDefaults() }],
     teams: [
       // Ecosistemas gestionables por el Admin (usuario ↔ equipo ↔ tareas).
       { id: 'TEAM-001', name: 'Nébula', userTag: 'Equipo "Nébula"', taskTag: 'Nébula', kind: 'team', valueStream: 'Cliente Digital', description: 'Equipo de entrega de Andrés Gómez (PCD · CORE)' },
@@ -1986,32 +2073,36 @@ export function buildSeed() {
     ],
     resources: [
       // Equipos de desarrollo registrados por cada PM (reparto por proyecto).
-      // Andrés Gómez (USR-004) → PCD, CORE · Daniela Ortiz (USR-020) → ANA, DAT, BI
-      // · Roberto Salas (USR-021) → BAN, CAN. Algunos devs son compartidos.
+      // Un recurso puede pertenecer a varios sprints del proyecto (líneas de tiempo
+      // distintas), por eso `sprintIds` es una lista (permite reutilizar personas).
       // --- Andrés Gómez (PM1) ---
-      { id: 'RES-001', projectId: 'PRJ-001', userId: 'USR-009', sprintId: 'SPR-001', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-002', projectId: 'PRJ-001', userId: 'USR-016', sprintId: 'SPR-002', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-003', projectId: 'PRJ-001', userId: 'USR-025', sprintId: 'SPR-002', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-004', projectId: 'PRJ-002', userId: 'USR-012', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-005', projectId: 'PRJ-002', userId: 'USR-011', addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-001', projectId: 'PRJ-001', userId: 'USR-009', sprintIds: ['SPR-001'], addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-002', projectId: 'PRJ-001', userId: 'USR-016', sprintIds: ['SPR-002'], addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-003', projectId: 'PRJ-001', userId: 'USR-025', sprintIds: ['SPR-001', 'SPR-002'], addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-004', projectId: 'PRJ-002', userId: 'USR-012', sprintIds: ['SPR-003'], addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-005', projectId: 'PRJ-002', userId: 'USR-011', sprintIds: ['SPR-003', 'SPR-004'], addedBy: 'Andrés Gómez', addedAt: '2026-01-05T10:00:00Z' },
       // --- Daniela Ortiz (PM2) ---
-      { id: 'RES-006', projectId: 'PRJ-003', userId: 'USR-013', addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-007', projectId: 'PRJ-003', userId: 'USR-026', addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-008', projectId: 'PRJ-003', userId: 'USR-024', addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-009', projectId: 'PRJ-004', userId: 'USR-017', addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-010', projectId: 'PRJ-004', userId: 'USR-026', addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-011', projectId: 'PRJ-005', userId: 'USR-014', addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-012', projectId: 'PRJ-005', userId: 'USR-024', addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-006', projectId: 'PRJ-003', userId: 'USR-013', sprintIds: ['SPR-005'], addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-007', projectId: 'PRJ-003', userId: 'USR-026', sprintIds: ['SPR-005', 'SPR-014'], addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-008', projectId: 'PRJ-003', userId: 'USR-024', sprintIds: ['SPR-014'], addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-009', projectId: 'PRJ-004', userId: 'USR-017', sprintIds: ['SPR-006', 'SPR-007'], addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-010', projectId: 'PRJ-004', userId: 'USR-026', sprintIds: ['SPR-006'], addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-011', projectId: 'PRJ-005', userId: 'USR-013', sprintIds: ['SPR-008'], addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-012', projectId: 'PRJ-005', userId: 'USR-014', sprintIds: ['SPR-008', 'SPR-009'], addedBy: 'Daniela Ortiz', addedAt: '2026-01-05T10:00:00Z' },
       // --- Roberto Salas (PM3) ---
-      { id: 'RES-013', projectId: 'PRJ-006', userId: 'USR-015', addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-014', projectId: 'PRJ-006', userId: 'USR-009', addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
-      { id: 'RES-015', projectId: 'PRJ-006', userId: 'USR-016', addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
-{ id: 'RES-016', projectId: 'PRJ-007', userId: 'USR-012', addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
-    { id: 'RES-017', projectId: 'PRJ-007', userId: 'USR-023', addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
-    { id: 'RES-018', projectId: 'PRJ-006', userId: 'USR-033', addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
-    { id: 'RES-019', projectId: 'PRJ-007', userId: 'USR-034', addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-013', projectId: 'PRJ-006', userId: 'USR-015', sprintIds: ['SPR-010'], addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-014', projectId: 'PRJ-006', userId: 'USR-009', sprintIds: ['SPR-010', 'SPR-011'], addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-015', projectId: 'PRJ-006', userId: 'USR-016', sprintIds: ['SPR-011'], addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-016', projectId: 'PRJ-007', userId: 'USR-012', sprintIds: ['SPR-012'], addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-017', projectId: 'PRJ-007', userId: 'USR-023', sprintIds: ['SPR-013'], addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-018', projectId: 'PRJ-006', userId: 'USR-033', sprintIds: ['SPR-010', 'SPR-011'], addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
+      { id: 'RES-019', projectId: 'PRJ-007', userId: 'USR-034', sprintIds: ['SPR-012', 'SPR-013'], addedBy: 'Roberto Salas', addedAt: '2026-01-05T10:00:00Z' },
     ],
     state,
+    settings: [
+      // Config del tablero: límites WIP (los edita el Admin) y orden manual de listados.
+      { id: 'SET-001', wipLimits: { in_progress: 5, qa: 5, uat: 4 }, taskOrder: {}, updatedAt: '' },
+    ],
   };
 }
 
@@ -2022,6 +2113,21 @@ export function buildSeed() {
  * cambios de etapa. Estos datos alimentan la bitácora de la tarea y las
  * métricas de tiempo de respuesta por persona del dashboard.
  */
+/**
+ * Deriva las entradas del Costo del retraso (valor de negocio, urgencia y
+ * reducción de riesgo) a partir del WSJF y del Tamaño de una tarea del seed,
+ * de modo que el WSJF recalculado coincida con el declarado.
+ */
+function deriveWsjfInput(wsjf, storyPoints) {
+  if (wsjf == null) return null;
+  const size = Number(storyPoints) || 1;
+  const cod = Math.max(3, Math.round(Number(wsjf) * size));
+  const userValue = Math.max(1, Math.round(cod * 0.5));
+  const timeValue = Math.max(1, Math.round(cod * 0.3));
+  const riskValue = Math.max(1, cod - userValue - timeValue);
+  return { userValue, timeValue, riskValue };
+}
+
 function buildAuditTrail(task, users) {
   const byRole = {};
   users.forEach((u) => {

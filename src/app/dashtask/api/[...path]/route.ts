@@ -14,11 +14,17 @@ import { TimelineController } from '@/dashtask-api/controllers/TimelineControlle
 import { ResourceController } from '@/dashtask-api/controllers/ResourceController.js';
 import { AdminController } from '@/dashtask-api/controllers/AdminController.js';
 import { TeamController } from '@/dashtask-api/controllers/TeamController.js';
-import { auth, allowRoles } from '@/dashtask-api/middleware/auth.js';
+import { RoleController } from '@/dashtask-api/controllers/RoleController.js';
+import { GlossaryController } from '@/dashtask-api/controllers/GlossaryController.js';
+import { ProgramIncrementController } from '@/dashtask-api/controllers/ProgramIncrementController.js';
+import { BlockController } from '@/dashtask-api/controllers/BlockController.js';
+import { SettingsController } from '@/dashtask-api/controllers/SettingsController.js';
+import { auth, allowRoles, allowEcosystems } from '@/dashtask-api/middleware/auth.js';
 
 type Fn = (req: any, res: any, next?: (err?: unknown) => void) => unknown;
 
 const requireRoles = (...roles: string[]): Fn => allowRoles(...roles) as Fn;
+const requireEcosystems: Fn = allowEcosystems as Fn;
 
 const routes: [string, string, ...Fn[]][] = [
   ['POST', '/auth/login', AuthController.login],
@@ -30,15 +36,27 @@ const routes: [string, string, ...Fn[]][] = [
   ['GET', '/admin/permissions', auth as Fn, requireRoles('admin'), AdminController.permissions],
   ['PUT', '/admin/permissions/:userId', auth as Fn, requireRoles('admin'), AdminController.upsertPermission],
   ['DELETE', '/admin/permissions/:userId', auth as Fn, requireRoles('admin'), AdminController.removePermission],
-  ['GET', '/admin/teams', auth as Fn, requireRoles('admin'), TeamController.list],
-  ['POST', '/admin/teams', auth as Fn, requireRoles('admin'), TeamController.create],
-  ['PATCH', '/admin/teams/:id', auth as Fn, requireRoles('admin'), TeamController.update],
-  ['DELETE', '/admin/teams/:id', auth as Fn, requireRoles('admin'), TeamController.remove],
-  ['PUT', '/admin/users/:id/team', auth as Fn, requireRoles('admin'), TeamController.setUserTeam],
+  ['GET', '/admin/teams', auth as Fn, requireEcosystems, TeamController.list],
+  ['POST', '/admin/teams', auth as Fn, requireEcosystems, TeamController.create],
+  ['PATCH', '/admin/teams/:id', auth as Fn, requireEcosystems, TeamController.update],
+  ['DELETE', '/admin/teams/:id', auth as Fn, requireEcosystems, TeamController.remove],
+  ['PUT', '/admin/users/:id/team', auth as Fn, requireEcosystems, TeamController.setUserTeam],
 
   ['GET', '/users', auth as Fn, UserController.list],
   ['GET', '/users/roles', auth as Fn, UserController.roles],
+  ['POST', '/users', auth as Fn, requireRoles('admin'), UserController.create],
   ['GET', '/users/:id', auth as Fn, UserController.get],
+  ['PATCH', '/users/:id', auth as Fn, requireRoles('admin'), UserController.update],
+
+  ['GET', '/roles', auth as Fn, RoleController.list],
+  ['PUT', '/roles/:id', auth as Fn, requireRoles('admin'), RoleController.update],
+
+  ['GET', '/glossary', auth as Fn, GlossaryController.get],
+  ['PUT', '/glossary', auth as Fn, requireRoles('admin'), GlossaryController.update],
+
+  ['GET', '/pis', auth as Fn, ProgramIncrementController.list],
+  ['GET', '/pis/:id', auth as Fn, ProgramIncrementController.get],
+  ['POST', '/pis/:id/confidence-vote', auth as Fn, ProgramIncrementController.vote],
 
   ['GET', '/intakes', auth as Fn, IntakeController.list],
   ['POST', '/intakes', auth as Fn, IntakeController.create],
@@ -56,9 +74,12 @@ const routes: [string, string, ...Fn[]][] = [
 
   ['GET', '/tasks', auth as Fn, TaskController.list],
   ['GET', '/tasks/board', auth as Fn, TaskController.board],
+  ['GET', '/tasks/prioritized', auth as Fn, TaskController.prioritized],
   ['POST', '/tasks', auth as Fn, TaskController.create],
+  ['POST', '/tasks/reorder', auth as Fn, TaskController.reorder],
   ['GET', '/tasks/:id', auth as Fn, TaskController.get],
   ['PATCH', '/tasks/:id', auth as Fn, TaskController.update],
+  ['PATCH', '/tasks/:id/details', auth as Fn, TaskController.editDetails],
   ['POST', '/tasks/:id/reschedule', auth as Fn, TaskController.reschedule],
   ['POST', '/tasks/:id/move', auth as Fn, TaskController.move],
   ['POST', '/tasks/:id/advance', auth as Fn, TaskController.advance],
@@ -93,8 +114,17 @@ const routes: [string, string, ...Fn[]][] = [
   ['GET', '/resources', auth as Fn, ResourceController.list],
   ['GET', '/resources/candidates', auth as Fn, ResourceController.candidates],
   ['POST', '/resources', auth as Fn, ResourceController.add],
+  ['POST', '/resources/:id/sprints', auth as Fn, ResourceController.assignSprint],
+  ['DELETE', '/resources/:id/sprints/:sprintId', auth as Fn, ResourceController.unassignSprint],
   ['PATCH', '/resources/:id', auth as Fn, ResourceController.update],
   ['DELETE', '/resources/:id', auth as Fn, ResourceController.remove],
+
+  ['GET', '/blocks', auth as Fn, BlockController.list],
+  ['POST', '/blocks', auth as Fn, BlockController.create],
+  ['POST', '/blocks/:id/decide', auth as Fn, BlockController.decide],
+
+  ['GET', '/settings', auth as Fn, SettingsController.get],
+  ['PUT', '/settings/wip', auth as Fn, SettingsController.updateWip],
 
   ['GET', '/changes', auth as Fn, requireRoles(...(ChangeController.viewRoles as string[])), ChangeController.list],
   ['POST', '/changes/:id/decide', auth as Fn, requireRoles('lpm', 'business_owner', 'epic_owner', 'rte', 'admin'), ChangeController.decide],

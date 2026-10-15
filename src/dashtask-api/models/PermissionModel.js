@@ -29,6 +29,8 @@ export const PermissionModel = {
       grantedBy: patch.grantedBy || '',
       grantedAt: now(),
       canMarkAnyChecklist: !!patch.canMarkAnyChecklist,
+      canApproveBlocks: !!patch.canApproveBlocks,
+      canManageEcosystems: !!patch.canManageEcosystems,
       projectIds: patch.projectIds || [],
     });
   },

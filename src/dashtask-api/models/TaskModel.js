@@ -1,6 +1,7 @@
 import db from './Database.js';
 import { nextId, now } from '../utils/id.js';
-import { buildChecklist, STAGE_IDS, nextStage, stageIndex } from '../config/taskFlow.js';
+import { buildChecklist, STAGE_IDS, nextStage, stageIndex, computeWsjf, priorityFromWsjf } from '../config/taskFlow.js';
+import { SettingsModel } from './SettingsModel.js';
 
 /** MODELO: Task (tarjeta del tablero Kanban / backlog) */
 const col = () => db.collection('tasks');
@@ -19,6 +20,31 @@ function withChecklist(status, doneKeys) {
   return buildChecklist(status, doneKeys);
 }
 
+/**
+ * Recalcula WSJF y la prioridad derivada a partir de las entradas de Costo del
+ * retraso (wsjfInput) y del Tamaño (Story Points). Si la tarea aún no tiene
+ * entradas de WSJF, mantiene el wsjf guardado y solo re-deriva la prioridad.
+ */
+function deriveFromWsjf(task) {
+  const input = task.wsjfInput;
+  const hasInput = input && ['userValue', 'timeValue', 'riskValue']
+    .some((k) => input[k] != null && input[k] !== '');
+  if (hasInput) {
+    const wsjf = computeWsjf({
+      userValue: input.userValue,
+      timeValue: input.timeValue,
+      riskValue: input.riskValue,
+      jobSize: task.storyPoints,
+    });
+    return { wsjf, priority: priorityFromWsjf(wsjf) };
+  }
+  if (task.wsjf != null && task.wsjf !== '') {
+    const priority = priorityFromWsjf(task.wsjf);
+    return priority ? { priority } : {};
+  }
+  return {};
+}
+
 export const TaskModel = {
   all: () => col().all(),
   findById: (id) => col().findById(id),
@@ -31,6 +57,16 @@ export const TaskModel = {
   create: (payload) => {
     const id = nextId(col().all(), 'TSK');
     const status = payload.status || 'backlog';
+    const storyPoints = payload.storyPoints ?? null;
+    const wsjfInput = payload.wsjfInput || null;
+    let wsjf = payload.wsjf ?? null;
+    let priority = payload.priority || 'Media';
+    if (wsjfInput) {
+      wsjf = computeWsjf({ ...wsjfInput, jobSize: storyPoints });
+      priority = priorityFromWsjf(wsjf) || priority;
+    } else if (wsjf != null) {
+      priority = priorityFromWsjf(wsjf) || priority;
+    }
     const doc = {
       id,
       title: payload.title || 'Sin título',
@@ -38,9 +74,10 @@ export const TaskModel = {
       type: payload.type || 'Story',
       status,
       class: payload.class || 'Standard',
-      priority: payload.priority || 'Media',
-      wsjf: payload.wsjf ?? null,
-      storyPoints: payload.storyPoints ?? null,
+      priority,
+      wsjf,
+      wsjfInput,
+      storyPoints,
       assigneeId: payload.assigneeId || '',
       assignee: payload.assignee || '',
       reporterId: payload.reporterId || '',
@@ -67,7 +104,13 @@ export const TaskModel = {
     return col().insert(doc);
   },
 
-  update: (id, patch) => col().update(id, { ...patch, updatedAt: now() }),
+  update: (id, patch) => {
+    const current = col().findById(id);
+    if (!current) return null;
+    const merged = { ...current, ...patch };
+    const derived = deriveFromWsjf(merged);
+    return col().update(id, { ...patch, ...derived, updatedAt: now() });
+  },
   move: (id, status, extra = {}) => col().update(id, { status, ...extra, updatedAt: now() }),
   remove: (id) => col().remove(id),
 
@@ -141,12 +184,26 @@ export const TaskModel = {
 
   board: () => {
     const all = col().all();
-    return KANBAN_COLUMNS.map((c) => ({
-      ...c,
-      count: all.filter((t) => t.status === c.id).length,
-      items: all.filter((t) => t.status === c.id),
-      overWip: c.wip != null && all.filter((t) => t.status === c.id).length > c.wip,
-    }));
+    const wipLimits = SettingsModel.getWipLimits();
+    return KANBAN_COLUMNS.map((c) => {
+      const wip = c.wip == null ? null : (wipLimits[c.id] ?? c.wip);
+      const count = all.filter((t) => t.status === c.id).length;
+      return {
+        ...c,
+        wip,
+        count,
+        items: all.filter((t) => t.status === c.id),
+        overWip: wip != null && count > wip,
+      };
+    });
+  },
+
+  /** Límite WIP efectivo (configurable) de una columna; null = sin límite. */
+  wipFor: (columnId) => {
+    const column = KANBAN_COLUMNS.find((c) => c.id === columnId);
+    if (!column || column.wip == null) return null;
+    const limits = SettingsModel.getWipLimits();
+    return limits[columnId] ?? column.wip;
   },
 };
 

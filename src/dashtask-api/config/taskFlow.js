@@ -107,3 +107,34 @@ export function buildChecklist(status, doneKeys = []) {
   });
   return items;
 }
+
+/* ---------------- WSJF: priorización automática ---------------- */
+
+/**
+ * Niveles de prioridad derivados del WSJF (Costo del retraso ÷ Tamaño del trabajo).
+ * A mayor WSJF, más arriba en la lista y más crítica la categoría de la tarea.
+ * `userValue` (valor de negocio), `timeValue` (urgencia / criticidad temporal) y
+ * `riskValue` (reducción de riesgo u oportunidad) forman el Costo del retraso;
+ * el Tamaño (Job Size) es el esfuerzo en Story Points.
+ */
+export const WSJF_PRIORITY_LEVELS = [
+  { min: 12, label: 'Crítica' },
+  { min: 7, label: 'Alta' },
+  { min: 4, label: 'Media' },
+  { min: 0, label: 'Baja' },
+];
+
+/** Categoriza la prioridad de una tarea a partir de su WSJF calculado. */
+export function priorityFromWsjf(wsjf) {
+  const value = Number(wsjf);
+  if (wsjf == null || wsjf === '' || Number.isNaN(value)) return '';
+  const level = WSJF_PRIORITY_LEVELS.find((l) => value >= l.min);
+  return level ? level.label : 'Baja';
+}
+
+/** WSJF = Costo del retraso ÷ Tamaño del trabajo (Job Size = Story Points). */
+export function computeWsjf({ userValue = 0, timeValue = 0, riskValue = 0, jobSize = 1 } = {}) {
+  const cod = Number(userValue) + Number(timeValue) + Number(riskValue);
+  const size = Number(jobSize) || 1;
+  return Math.round((cod / size) * 100) / 100;
+}

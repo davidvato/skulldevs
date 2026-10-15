@@ -1,4 +1,5 @@
 import { UserModel } from '../models/UserModel.js';
+import { canManageEcosystems, canManageProcedures } from '../services/PermissionService.js';
 
 /**
  * MIDDLEWARE de autenticación.
@@ -33,4 +34,22 @@ export function allowRoles(...roles) {
     }
     return next();
   };
+}
+
+/** Autoriza a quien puede organizar ecosistemas (Admin, LPM, Product Mgmt o permiso global). */
+export function allowEcosystems(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: 'No autenticado.' });
+  if (!canManageEcosystems(req.user)) {
+    return res.status(403).json({ error: 'Solo el Admin, LPM o Product Management pueden organizar los ecosistemas.' });
+  }
+  return next();
+}
+
+/** Autoriza a quien puede crear/editar procedimientos de checklist. */
+export function allowProcedureEditors(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: 'No autenticado.' });
+  if (!canManageProcedures(req.user)) {
+    return res.status(403).json({ error: 'Tu rol no puede editar los procedimientos.' });
+  }
+  return next();
 }
