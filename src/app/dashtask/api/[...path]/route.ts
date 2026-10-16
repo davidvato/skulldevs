@@ -3,6 +3,7 @@ import { AuthController } from '@/dashtask-api/controllers/AuthController.js';
 import { UserController } from '@/dashtask-api/controllers/UserController.js';
 import { IntakeController } from '@/dashtask-api/controllers/IntakeController.js';
 import { TaskController } from '@/dashtask-api/controllers/TaskController.js';
+import { CommentController } from '@/dashtask-api/controllers/CommentController.js';
 import { SprintController } from '@/dashtask-api/controllers/SprintController.js';
 import { CalendarController } from '@/dashtask-api/controllers/CalendarController.js';
 import { CeremonyController } from '@/dashtask-api/controllers/CeremonyController.js';
@@ -86,6 +87,13 @@ const routes: [string, string, ...Fn[]][] = [
   ['POST', '/tasks/:id/checklist/:key', auth as Fn, TaskController.checklist],
   ['POST', '/tasks/:id/sprint', auth as Fn, TaskController.assignSprint],
   ['DELETE', '/tasks/:id', auth as Fn, TaskController.remove],
+
+  ['GET', '/tasks/:id/comments', auth as Fn, CommentController.list],
+  ['POST', '/tasks/:id/comments', auth as Fn, CommentController.create],
+  ['PATCH', '/comments/:id', auth as Fn, CommentController.update],
+  ['DELETE', '/comments/:id', auth as Fn, CommentController.remove],
+  ['GET', '/mentions', auth as Fn, CommentController.mentions],
+  ['POST', '/mentions/read', auth as Fn, CommentController.markRead],
 
   ['GET', '/ceremonies', auth as Fn, CeremonyController.list],
   ['GET', '/ceremonies/role/:role', auth as Fn, CeremonyController.forRole],
