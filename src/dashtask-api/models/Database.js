@@ -8,6 +8,7 @@ import { buildSeed, SEED_VERSION } from '../data/seedData.js';
 class Database {
   constructor() {
     this.data = this._load();
+    this.dirty = false;
   }
 
   _load() {
@@ -17,11 +18,22 @@ class Database {
   }
 
   _persist() {
-    // No-op: la base vive en memoria (demo serverless).
+    this.dirty = true;
   }
 
   seed() {
     this.data = this._load();
+    this.dirty = true;
+    return this.data;
+  }
+
+  snapshot() {
+    return JSON.parse(JSON.stringify(this.data));
+  }
+
+  restore(data) {
+    this.data = data;
+    this.dirty = false;
     return this.data;
   }
 

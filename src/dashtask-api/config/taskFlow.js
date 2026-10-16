@@ -1,8 +1,9 @@
 /**
- * Flujo de vida de una tarea (5 etapas del Kanban del Project Manager).
+ * Flujo de vida de una tarea (6 etapas del Kanban del Project Manager).
  * Cada etapa tiene un checklist cuyos ítems pertenecen a un rol:
  * ese rol es quien puede marcarlos como completados desde la página de la tarea.
  * El avance a la siguiente etapa se habilita cuando la etapa actual está 100% completa.
+ * `done` es el estado final: se alcanza desde `release` (checklist completo) con el botón Done.
  */
 export const TASK_STAGES = [
   {
@@ -60,9 +61,22 @@ export const TASK_STAGES = [
       { key: 'rel-bo', label: 'Valor de negocio confirmado', role: 'business_owner' },
     ],
   },
+  {
+    id: 'done',
+    label: 'Done',
+    icon: '✅',
+    output: 'Tarea completada y verificada en producción',
+    checklist: [],
+  },
 ];
 
 export const STAGE_IDS = TASK_STAGES.map((s) => s.id);
+
+/** Estados que cuentan como trabajo entregado/completado para métricas y progreso. */
+export const DONE_STATUSES = ['release', 'done'];
+
+/** ¿La tarea está entregada (release) o cerrada (done)? */
+export const isCompletedStatus = (status) => DONE_STATUSES.includes(status);
 
 /** Índice de una etapa dentro del flujo. `blocked` se ubica en la etapa previa del flujo. */
 export function stageIndex(status) {

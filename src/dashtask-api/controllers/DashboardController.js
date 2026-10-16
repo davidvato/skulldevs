@@ -6,8 +6,29 @@ import { ProgramIncrementModel } from '../models/ProgramIncrementModel.js';
 import { ProjectModel } from '../models/ProjectModel.js';
 import { getRole, ROLES } from '../config/roles.js';
 import { canEditChecklistItem } from '../services/PermissionService.js';
+import { isCompletedStatus } from '../config/taskFlow.js';
 
 const withComplete = (i) => ({ ...i, completeness: completeness(i.checklist) });
+
+/** Métricas de avance comunes para todos los dashboards: tareas y puntos completados. */
+function progressOf(tasks) {
+  const total = tasks.length;
+  const done = tasks.filter((t) => isCompletedStatus(t.status));
+  const inFlight = tasks.filter((t) => ['refining', 'in_progress', 'qa', 'uat', 'release'].includes(t.status)).length;
+  const blocked = tasks.filter((t) => t.status === 'blocked').length;
+  const points = tasks.reduce((s, t) => s + (Number(t.storyPoints) || 0), 0);
+  const donePoints = done.reduce((s, t) => s + (Number(t.storyPoints) || 0), 0);
+  return {
+    total,
+    completed: done.length,
+    inFlight,
+    blocked,
+    points,
+    donePoints,
+    percent: total ? Math.round((done.length / total) * 100) : 0,
+    pointsPercent: points ? Math.round((donePoints / points) * 100) : 0,
+  };
+}
 
 /**
  * CONTROLADOR: Dashboard por rol.
@@ -28,6 +49,8 @@ export const DashboardController = {
       role,
       generatedAt: new Date().toISOString(),
       programIncrement: pi,
+      // Avance global del ART (todas las vistas de rol lo muestran).
+      progress: progressOf(tasks),
       roleCeremonies: ceremonies
         .filter((c) => (c.participants || []).includes(roleId) || c.facilitator === roleId)
         .sort((a, b) => String(a.nextDate).localeCompare(String(b.nextDate))),
@@ -51,6 +74,7 @@ function kpi(label, value, hint = '', tone = 'neutral') {
 function buildForRole(roleId, ctx, userId) {
   const { intakes, tasks, pi } = ctx;
   const byStatus = (arr, s) => arr.filter((x) => x.status === s);
+  const byCompleted = (arr) => arr.filter((x) => isCompletedStatus(x.status));
   const users = UserModel.all();
 
   switch (roleId) {
@@ -159,7 +183,7 @@ function buildForRole(roleId, ctx, userId) {
         kpis: [
           kpi('PI Objectives', total, `${committed} comprometidos`),
           kpi('BV planificado', (pi?.objectives || []).reduce((s, o) => s + (o.businessValue || 0), 0), 'business value total'),
-          kpi('Aceptadas', byStatus(tasks, 'release').length, 'valor entregado'),
+          kpi('Aceptadas', byCompleted(tasks).length, 'valor entregado'),
           kpi('Riesgos del PI', (pi?.risks || []).length, 'a monitorear', 'warn'),
         ],
         objectives: pi?.objectives || [],
@@ -178,7 +202,7 @@ function buildForRole(roleId, ctx, userId) {
           kpi('WIP total', board.reduce((s, c) => s + c.count, 0), 'tarjetas en el tablero'),
           kpi('Bloqueados', blocked.length, 'a desbloquear', blocked.length ? 'danger' : 'ok'),
           kpi('En progreso', byStatus(tasks, 'in_progress').length, `límite ${3}`),
-          kpi('Completadas', byStatus(tasks, 'release').length, 'aceptadas'),
+          kpi('Completadas', byCompleted(tasks).length, 'aceptadas'),
         ],
         board: board.map((c) => ({ id: c.id, title: c.title, count: c.count, wip: c.wip, overWip: c.overWip })),
         blocked,
@@ -250,7 +274,7 @@ function buildForRole(roleId, ctx, userId) {
           kpi('Puntos Dev pendientes', devPending.length, 'del área de desarrollo'),
           kpi('En QA / UAT', tasks.filter((t) => ['qa', 'uat'].includes(t.status)).length, 'por validar'),
           kpi('Bloqueadas', tasks.filter((t) => t.status === 'blocked').length, 'impedimentos', 'warn'),
-          kpi('Liberadas', tasks.filter((t) => t.status === 'release').length, 'valor entregado', 'ok'),
+          kpi('Liberadas', byCompleted(tasks).length, 'valor entregado', 'ok'),
         ],
         devPending,
         board: TaskModel.board().map((c) => ({ id: c.id, title: c.title, count: c.count, wip: c.wip, overWip: c.overWip })),

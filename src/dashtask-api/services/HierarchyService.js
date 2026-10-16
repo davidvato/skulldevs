@@ -2,11 +2,12 @@ import { ProjectModel } from '../models/ProjectModel.js';
 import { EpicModel } from '../models/EpicModel.js';
 import { TaskModel } from '../models/TaskModel.js';
 import { SprintModel } from '../models/SprintModel.js';
+import { isCompletedStatus } from '../config/taskFlow.js';
 
 /** SERVICIO: construye la jerarquía Proyecto → Épica → Tarea. */
 
 export function taskProgress(tasks = []) {
-  const done = tasks.filter((t) => t.status === 'release').length;
+  const done = tasks.filter((t) => isCompletedStatus(t.status)).length;
   const points = tasks.reduce((s, t) => s + (t.storyPoints || 0), 0);
   return {
     total: tasks.length,

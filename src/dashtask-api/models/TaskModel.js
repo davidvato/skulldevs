@@ -13,6 +13,7 @@ export const KANBAN_COLUMNS = [
   { id: 'qa', title: 'QA', wip: 5 },
   { id: 'uat', title: 'Staging Review / UAT', wip: 4 },
   { id: 'release', title: 'Release', wip: null },
+  { id: 'done', title: 'Done', wip: null },
   { id: 'blocked', title: 'Bloqueado (excepción)', wip: null, exception: true },
 ];
 
@@ -175,11 +176,12 @@ export const TaskModel = {
     return [...prev, final];
   },
 
-  /** ¿La etapa actual de la tarea está completa? */
+  /** ¿La etapa actual de la tarea está completa? (`done` no tiene checklist: siempre completa) */
   stageCompletion: (task) => {
     const items = (task.checklist || []).filter((i) => i.stage === task.status);
     const done = items.filter((i) => i.done).length;
-    return { total: items.length, done, complete: items.length > 0 && done === items.length, items };
+    const complete = task.status === 'done' || (items.length > 0 && done === items.length);
+    return { total: items.length, done, complete, items };
   },
 
   board: () => {

@@ -1882,10 +1882,10 @@ export function buildSeed() {
     'TSK-020': ['wip-dev'],
   };
 
-  // Migración de estados antiguos a las 5 etapas del Kanban actual.
+  // Migración de estados antiguos a las 6 etapas del Kanban actual.
   const STATUS_MIGRATION = {
     backlog: 'backlog', refining: 'backlog', ready: 'backlog',
-    in_progress: 'in_progress', review: 'qa', blocked: 'blocked', done: 'release',
+    in_progress: 'in_progress', review: 'qa', blocked: 'blocked', done: 'done',
   };
 
   /* ---------------- Historias de usuario por tarea ---------------- */
@@ -2136,7 +2136,7 @@ function buildAuditTrail(task, users) {
   const log = [];
   const created = task.createdAt ? +new Date(task.createdAt) : Date.now();
   let cursor = created + 2 * 3600000; // primera respuesta 2 h después de creada
-  const STAGE_FLOW = ['backlog', 'in_progress', 'qa', 'uat', 'release'];
+  const STAGE_FLOW = ['backlog', 'in_progress', 'qa', 'uat', 'release', 'done'];
 
   STAGE_FLOW.forEach((stage, si) => {
     const items = (task.checklist || []).filter((i) => i.stage === stage);

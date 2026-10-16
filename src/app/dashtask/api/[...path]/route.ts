@@ -21,6 +21,7 @@ import { ProgramIncrementController } from '@/dashtask-api/controllers/ProgramIn
 import { BlockController } from '@/dashtask-api/controllers/BlockController.js';
 import { SettingsController } from '@/dashtask-api/controllers/SettingsController.js';
 import { auth, allowRoles, allowEcosystems } from '@/dashtask-api/middleware/auth.js';
+import { ensureHydrated, persist } from '@/dashtask-api/store/persistence.js';
 
 type Fn = (req: any, res: any, next?: (err?: unknown) => void) => unknown;
 
@@ -78,14 +79,20 @@ const routes: [string, string, ...Fn[]][] = [
   ['GET', '/tasks/prioritized', auth as Fn, TaskController.prioritized],
   ['POST', '/tasks', auth as Fn, TaskController.create],
   ['POST', '/tasks/reorder', auth as Fn, TaskController.reorder],
+  ['POST', '/tasks/done', auth as Fn, TaskController.bulkDone],
   ['GET', '/tasks/:id', auth as Fn, TaskController.get],
   ['PATCH', '/tasks/:id', auth as Fn, TaskController.update],
   ['PATCH', '/tasks/:id/details', auth as Fn, TaskController.editDetails],
   ['POST', '/tasks/:id/reschedule', auth as Fn, TaskController.reschedule],
   ['POST', '/tasks/:id/move', auth as Fn, TaskController.move],
   ['POST', '/tasks/:id/advance', auth as Fn, TaskController.advance],
+  ['POST', '/tasks/:id/done', auth as Fn, TaskController.markDone],
   ['POST', '/tasks/:id/checklist/:key', auth as Fn, TaskController.checklist],
   ['POST', '/tasks/:id/sprint', auth as Fn, TaskController.assignSprint],
+  ['POST', '/tasks/:id/assign-resource', auth as Fn, TaskController.assignResource],
+  ['POST', '/tasks/:id/stories', auth as Fn, TaskController.addStory],
+  ['PATCH', '/tasks/:id/stories/:storyId', auth as Fn, TaskController.updateStory],
+  ['DELETE', '/tasks/:id/stories/:storyId', auth as Fn, TaskController.removeStory],
   ['DELETE', '/tasks/:id', auth as Fn, TaskController.remove],
 
   ['GET', '/tasks/:id/comments', auth as Fn, CommentController.list],
@@ -105,6 +112,7 @@ const routes: [string, string, ...Fn[]][] = [
   ['GET', '/projects/:id', auth as Fn, ProjectController.get],
 
   ['GET', '/epics', auth as Fn, EpicController.list],
+  ['POST', '/epics', auth as Fn, EpicController.create],
   ['GET', '/epics/:id', auth as Fn, EpicController.get],
 
   ['GET', '/sprints', auth as Fn, SprintController.list],
@@ -227,6 +235,7 @@ async function handle(request: Request, paramsPromise: Promise<{ path?: string[]
   const res = createRes();
 
   try {
+    await ensureHydrated();
     let body: unknown;
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       const text = await request.text();
@@ -249,6 +258,8 @@ async function handle(request: Request, paramsPromise: Promise<{ path?: string[]
     res._headers['content-type'] = 'application/json; charset=utf-8';
     res._body = JSON.stringify({ error: 'Error interno del servidor.' });
   }
+
+  await persist();
 
   const headers = new Headers();
   for (const [k, v] of Object.entries(res._headers as Record<string, string>)) headers.set(k, v);

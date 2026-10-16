@@ -25,6 +25,30 @@ export const ProgramIncrementModel = {
   findById: (id) => col().findById(id),
   update: (id, patch) => col().update(id, patch),
 
+  /**
+   * Backlog del portafolio del PI: lista de intakes validados y programados
+   * que esperan descomponerse en épicas/historias con el equipo.
+   */
+  backlog: (piId) => {
+    const pi = col().findById(piId);
+    return pi && Array.isArray(pi.backlog) ? pi.backlog : [];
+  },
+
+  addToBacklog: (piId, intakeId) => {
+    const pi = col().findById(piId);
+    if (!pi || !intakeId) return null;
+    const backlog = Array.isArray(pi.backlog) ? pi.backlog : [];
+    if (backlog.includes(intakeId)) return pi;
+    return col().update(piId, { backlog: [...backlog, intakeId] });
+  },
+
+  removeFromBacklog: (piId, intakeId) => {
+    const pi = col().findById(piId);
+    if (!pi) return null;
+    const backlog = (Array.isArray(pi.backlog) ? pi.backlog : []).filter((x) => x !== intakeId);
+    return col().update(piId, { backlog });
+  },
+
   /** Votos de confianza de un PI (opcionalmente filtrados por fase). */
   votes: (piId, phase = null) => votesCol().all()
     .filter((v) => v.piId === piId && (!phase || v.phase === phase))

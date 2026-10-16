@@ -6,6 +6,8 @@
  */
 import { ProgramIncrementModel } from '../models/ProgramIncrementModel.js';
 import { TaskModel } from '../models/TaskModel.js';
+import { IntakeModel } from '../models/IntakeModel.js';
+import { isCompletedStatus } from '../config/taskFlow.js';
 import { addDays, diffDays } from '../utils/dates.js';
 
 /** Particiona el período del PI en sus iteraciones (equitativo, igual que el Gantt). */
@@ -28,7 +30,7 @@ function stateFor({ start, end }, now) {
 
 function summarizeTasks(tasks) {
   const totalPoints = tasks.reduce((s, t) => s + (Number(t.storyPoints) || 0), 0);
-  const doneTasks = tasks.filter((t) => t.status === 'release');
+  const doneTasks = tasks.filter((t) => isCompletedStatus(t.status));
   const completedPoints = doneTasks.reduce((s, t) => s + (Number(t.storyPoints) || 0), 0);
   return {
     tasks: tasks.length,
@@ -47,6 +49,37 @@ const brief = (t) => ({
   priority: t.priority ?? null,
   projectId: t.projectId ?? null,
 });
+
+/**
+ * Backlog del portafolio del PI: intakes validados, autorizados y asignados al PM,
+ * esperando el desglose en épicas/historias con el equipo.
+ * Incluye los registrados explícitamente + los programados en este PI.
+ */
+const backlogBriefs = (pi) => {
+  const ids = [...(Array.isArray(pi.backlog) ? pi.backlog : [])];
+  IntakeModel.all()
+    .filter((i) => i.pi === pi.id && !ids.includes(i.id))
+    .forEach((i) => ids.push(i.id));
+  return ids
+    .map((id) => IntakeModel.findById(id))
+    .filter(Boolean)
+    .map((i) => ({
+      id: i.id,
+      title: i.title,
+      type: i.type,
+      status: i.status,
+      priority: i.priority || '',
+      wsjf: i.wsjf ?? null,
+      valueStream: i.valueStream || '',
+      authorized: !!i.authorized,
+      authorizedAt: i.authorizedAt || '',
+      authorizedBy: i.authorizedBy || '',
+      assignedTo: i.assignedTo || '',
+      assignedToId: i.assignedToId || '',
+      projectId: i.projectId || '',
+      iteration: i.iteration || '',
+    }));
+};
 
 export const ProgramIncrementService = {
   /** Lista de PIs con su medición de iteraciones y voto de confianza. */
@@ -114,6 +147,7 @@ export const ProgramIncrementService = {
       objectives: pi.objectives || [],
       risks: pi.risks || [],
       iterations,
+      backlog: backlogBriefs(pi),
       totals: {
         iterations: ranges.length,
         ...totals,

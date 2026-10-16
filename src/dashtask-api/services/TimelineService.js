@@ -9,6 +9,7 @@ import { ProjectModel } from '../models/ProjectModel.js';
 import { EpicModel } from '../models/EpicModel.js';
 import { ProgramIncrementModel } from '../models/ProgramIncrementModel.js';
 import { CeremonyModel } from '../models/CeremonyModel.js';
+import { isCompletedStatus } from '../config/taskFlow.js';
 import { availabilityForSprints } from './CapacityService.js';
 import { addDays, diffDays, fmt, toDate, occurrencesInMonth } from '../utils/dates.js';
 import { ROLES } from '../config/roles.js';
@@ -20,6 +21,7 @@ export const STATUS_TONES = {
   qa: 'qa',
   uat: 'uat',
   release: 'release',
+  done: 'done',
   blocked: 'blocked',
 };
 
@@ -127,7 +129,7 @@ export const TimelineService = {
       count: myTasks.filter((t) => t.status === c.id).length,
       tasks: myTasks.filter((t) => t.status === c.id).map((t) => t.id),
     }));
-    const done = columns.find((c) => c.id === 'release')?.count || 0;
+    const done = myTasks.filter((t) => isCompletedStatus(t.status)).length;
     return {
       user: { id: user.id, name: user.name, role: user.role },
       scopeLabel: scope?.label || 'asignadas a ti',
@@ -260,7 +262,7 @@ export const TimelineService = {
         totals: {
           epics: epics.length,
           tasks: pTasks.length,
-          done: pTasks.filter((t) => t.status === 'release').length,
+          done: pTasks.filter((t) => isCompletedStatus(t.status)).length,
           points: pTasks.reduce((s, t) => s + (Number(t.storyPoints) || 0), 0),
         },
       };

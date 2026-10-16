@@ -5,12 +5,17 @@ import { ProjectModel } from '../models/ProjectModel.js';
 import { SettingsModel } from '../models/SettingsModel.js';
 import { ChangeModel } from '../models/ChangeModel.js';
 import { BlockModel } from '../models/BlockModel.js';
+import { ResourceModel } from '../models/ResourceModel.js';
 import { RescheduleService } from '../services/RescheduleService.js';
 import { BlockService } from '../services/BlockService.js';
 import { taskContext } from '../services/HierarchyService.js';
 import { stageMeta } from '../config/taskFlow.js';
 import { ROLES } from '../config/roles.js';
 import { canEditChecklistItem, canApproveBlocks } from '../services/PermissionService.js';
+import { nextId } from '../utils/id.js';
+
+/** Estados válidos para una historia de usuario (coinciden con STATUS_META). */
+const STORY_STATUSES = ['backlog', 'refining', 'in_progress', 'review', 'blocked', 'done'];
 
 /** CONTROLADOR: Tasks / Kanban */
 export const TaskController = {
@@ -121,9 +126,16 @@ export const TaskController = {
 
   update: (req, res) => {
     const payload = { ...req.body };
-    if (payload.assigneeId && !payload.assignee) {
-      const u = UserModel.findById(payload.assigneeId);
-      if (u) payload.assignee = u.name;
+    // El responsable siempre se resuelve en el servidor: el nombre denormalizado
+    // (`assignee`) queda en sincronía con el usuario/recurso elegido, o se limpia
+    // si se quita la asignación (así las vistas de sprint muestran el nuevo responsable).
+    if ('assigneeId' in payload) {
+      if (payload.assigneeId) {
+        const u = UserModel.findById(payload.assigneeId);
+        payload.assignee = u ? u.name : (payload.assignee || '');
+      } else {
+        payload.assignee = payload.assignee ?? '';
+      }
     }
     const current = TaskModel.findById(req.params.id);
     if (!current) return res.status(404).json({ error: 'Tarea no encontrada.' });
@@ -139,6 +151,101 @@ export const TaskController = {
     // Al editar (p. ej. story points o valores de WSJF) la tarea se reacomoda:
     // se limpia el orden manual de sus listados y vuelven a ordenar por WSJF.
     if (updated) SettingsModel.clearTaskOrder(updated);
+    return res.json({ task: updated });
+  },
+
+  /**
+   * Asigna un recurso (persona del pool del proyecto) como responsable de la tarea.
+   * Resuelve `assigneeId` + `assignee` en el servidor para que todas las vistas
+   * (sprints, timeline, kanban, detalle) muestren al nuevo responsable.
+   * Body: `{ resourceId }` (recurso del pool) o `{ userId}` (usuario directo).
+   */
+  assignResource: (req, res) => {
+    const task = TaskModel.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada.' });
+    const { resourceId, userId } = req.body || {};
+    let person = null;
+    if (resourceId) {
+      const resource = ResourceModel.findById(resourceId);
+      if (!resource) return res.status(404).json({ error: 'Recurso no encontrado.' });
+      person = UserModel.findById(resource.userId);
+    } else if (userId) {
+      person = UserModel.findById(userId);
+    }
+    if (!person) return res.status(404).json({ error: 'No existe un usuario asociado a ese recurso.' });
+
+    const updated = TaskModel.update(task.id, { assigneeId: person.id, assignee: person.name });
+    TaskModel.audit(task.id, {
+      type: 'assignment',
+      action: 'assign',
+      from: task.assigneeId || '',
+      to: person.id,
+      actor: req.user.name,
+      role: req.user.role,
+      note: `Responsable actualizado a ${person.name}`,
+    });
+    return res.json({ task: updated, assignee: { id: person.id, name: person.name } });
+  },
+
+  /* ------------- Historias de usuario: desglose de épicas/features ------------- */
+
+  /** Agrega una historia de usuario a la tarea (desglose del equipo). */
+  addStory: (req, res) => {
+    const task = TaskModel.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada.' });
+    const { asA, iWant, soThat, ac = [], status = 'backlog' } = req.body || {};
+    if (!String(asA || '').trim() || !String(iWant || '').trim() || !String(soThat || '').trim()) {
+      return res.status(400).json({ error: 'La historia necesita "Como…", "quiero…" y "para…".' });
+    }
+    const stories = task.userStories || [];
+    const story = {
+      id: nextId(stories, 'US'),
+      asA: String(asA).trim(),
+      iWant: String(iWant).trim(),
+      soThat: String(soThat).trim(),
+      status: STORY_STATUSES.includes(status) ? status : 'backlog',
+      ac: Array.isArray(ac) ? ac.map((x) => String(x).trim()).filter(Boolean) : [],
+    };
+    const updated = TaskModel.update(task.id, { userStories: [...stories, story] });
+    return res.json({ story, task: updated });
+  },
+
+  /** Edita una historia de usuario (textos, criterios o estado). */
+  updateStory: (req, res) => {
+    const task = TaskModel.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada.' });
+    const stories = task.userStories || [];
+    const idx = stories.findIndex((s) => s.id === req.params.storyId);
+    if (idx < 0) return res.status(404).json({ error: 'Historia no encontrada.' });
+    const body = req.body || {};
+    const next = { ...stories[idx] };
+    if (body.asA !== undefined) next.asA = String(body.asA).trim();
+    if (body.iWant !== undefined) next.iWant = String(body.iWant).trim();
+    if (body.soThat !== undefined) next.soThat = String(body.soThat).trim();
+    if (body.status !== undefined && STORY_STATUSES.includes(body.status)) next.status = body.status;
+    if (body.ac !== undefined) {
+      next.ac = Array.isArray(body.ac) ? body.ac.map((x) => String(x).trim()).filter(Boolean) : [];
+    }
+    if (!next.asA || !next.iWant || !next.soThat) {
+      return res.status(400).json({ error: 'La historia necesita "Como…", "quiero…" y "para…".' });
+    }
+    const updated = TaskModel.update(task.id, {
+      userStories: stories.map((s, i) => (i === idx ? next : s)),
+    });
+    return res.json({ story: next, task: updated });
+  },
+
+  /** Elimina una historia de usuario del desglose. */
+  removeStory: (req, res) => {
+    const task = TaskModel.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada.' });
+    const stories = task.userStories || [];
+    if (!stories.some((s) => s.id === req.params.storyId)) {
+      return res.status(404).json({ error: 'Historia no encontrada.' });
+    }
+    const updated = TaskModel.update(task.id, {
+      userStories: stories.filter((s) => s.id !== req.params.storyId),
+    });
     return res.json({ task: updated });
   },
 
@@ -335,7 +442,7 @@ export const TaskController = {
     const task = TaskModel.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada.' });
     const next = nextStage(task.status);
-    if (!next) return res.status(400).json({ error: 'La tarea ya está en la última etapa (Release).' });
+    if (!next) return res.status(400).json({ error: 'La tarea ya está en la última etapa (Done).' });
     const comp = TaskModel.stageCompletion(task);
     if (!comp.complete) {
       return res.status(422).json({
@@ -355,6 +462,67 @@ export const TaskController = {
       note: `Avanzó a "${next.label}"`,
     });
     return res.json({ task: TaskModel.findById(task.id), stage: stageMeta(moved.status), advancedTo: next });
+  },
+
+  /**
+   * Marca una tarea de Release como "Done" en un solo paso.
+   * Requisitos: la tarea está en Release y su checklist de Release está 100% completo.
+   */
+  markDone: (req, res) => {
+    const task = TaskModel.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada.' });
+    if (task.status !== 'release') {
+      return res.status(422).json({ error: 'La tarea debe estar en Release para marcarse como Done.' });
+    }
+    const comp = TaskModel.stageCompletion(task);
+    if (!comp.complete) {
+      return res.status(422).json({
+        error: 'Faltan checks de Release antes de marcar Done.',
+        pending: comp.items.filter((i) => !i.done),
+      });
+    }
+    TaskModel.move(task.id, 'done', { blockedReason: '', previousStatus: '' });
+    TaskModel.audit(task.id, {
+      type: 'stage',
+      stage: 'release',
+      action: 'done',
+      from: 'release',
+      to: 'done',
+      actor: req.user.name,
+      role: req.user.role,
+      note: 'Tarea marcada como Done (liberada y verificada)',
+    });
+    return res.json({ task: TaskModel.findById(task.id), stage: stageMeta('done') });
+  },
+
+  /**
+   * Marca en bloque todas las tareas que estén en Release con checklist completo.
+   * Las que tengan checks pendientes se reportan en `skipped` sin modificarlas.
+   */
+  bulkDone: (req, res) => {
+    const candidates = TaskModel.findByStatus('release');
+    const taskIds = [];
+    const skipped = [];
+    candidates.forEach((task) => {
+      const comp = TaskModel.stageCompletion(task);
+      if (!comp.complete) {
+        skipped.push({ id: task.id, title: task.title, pending: comp.items.filter((i) => !i.done) });
+        return;
+      }
+      TaskModel.move(task.id, 'done', { blockedReason: '', previousStatus: '' });
+      TaskModel.audit(task.id, {
+        type: 'stage',
+        stage: 'release',
+        action: 'done',
+        from: 'release',
+        to: 'done',
+        actor: req.user.name,
+        role: req.user.role,
+        note: 'Cerrada en bloque con el botón Done',
+      });
+      taskIds.push(task.id);
+    });
+    return res.json({ updated: taskIds.length, taskIds, skipped });
   },
 
   /**

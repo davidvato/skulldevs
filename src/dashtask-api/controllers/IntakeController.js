@@ -1,8 +1,26 @@
 import { IntakeModel, completenessOf, normalizeRequirements, pendingByRole, computeWsjf } from '../models/IntakeModel.js';
 import { ChangeModel } from '../models/ChangeModel.js';
 import { PermissionModel } from '../models/PermissionModel.js';
+import { ProgramIncrementModel } from '../models/ProgramIncrementModel.js';
+import { ProjectModel } from '../models/ProjectModel.js';
+import { UserModel } from '../models/UserModel.js';
 import { RescheduleService } from '../services/RescheduleService.js';
 import { MANAGE_ROLES, INTAKE_REQUIREMENT_ROLES } from '../config/intakeRequirements.js';
+import { now } from '../utils/id.js';
+
+/** PM del proyecto del value stream del intake (se asigna como responsable). */
+function resolveProjectPM(valueStream) {
+  const projects = ProjectModel.all();
+  const inStream = valueStream ? projects.filter((p) => p.valueStream === valueStream) : [];
+  const project = inStream[0] || projects[0];
+  if (!project) return { projectId: '', userId: '', userName: '' };
+  const pm = project.productManagerId ? UserModel.findById(project.productManagerId) : null;
+  return {
+    projectId: project.id,
+    userId: pm ? pm.id : (project.productManagerId || ''),
+    userName: pm ? pm.name : (project.productManager || ''),
+  };
+}
 
 /** Gestión de la estructura de requisitos: PM, Admin o permiso global. */
 function canManageRequirements(user) {
@@ -123,9 +141,35 @@ export const IntakeController = {
         patch = { ...patch, status: 'prioritized', wsjf, priority: req.body.priority || 'Media' };
         break;
       }
-      case 'schedule':
-        patch = { ...patch, status: 'scheduled', pi: req.body.pi || intake.pi, iteration: req.body.iteration || intake.iteration };
+      case 'schedule': {
+        const piId = req.body.pi || intake.pi;
+        if (!piId) {
+          return res.status(400).json({ error: 'Debes seleccionar un Program Increment para programar el intake.' });
+        }
+        const pi = ProgramIncrementModel.findById(piId);
+        if (!pi) return res.status(400).json({ error: 'El Program Increment indicado no existe.' });
+        if (intake.status !== 'prioritized') {
+          return res.status(422).json({
+            error: 'El intake debe estar validado y priorizado (revisión conjunta / Backlog Review) antes de agregarse al backlog del PI.',
+          });
+        }
+        // 1) entra al backlog del portafolio del PI, 2) se autoriza, 3) se asigna al PM del value stream.
+        const pm = resolveProjectPM(intake.valueStream);
+        ProgramIncrementModel.addToBacklog(piId, intake.id);
+        patch = {
+          ...patch,
+          status: 'scheduled',
+          pi: piId,
+          iteration: req.body.iteration || intake.iteration || '',
+          authorized: true,
+          authorizedAt: now(),
+          authorizedBy: (req.user && req.user.name) || triagedBy || 'Intake Manager',
+          assignedToId: pm.userId || '',
+          assignedTo: pm.userName || '',
+          projectId: intake.projectId || pm.projectId || '',
+        };
         break;
+      }
       default:
         return res.status(400).json({ error: 'Acción de triage no válida.' });
     }

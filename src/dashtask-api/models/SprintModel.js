@@ -3,6 +3,7 @@ import { nextId } from '../utils/id.js';
 import { addDays, fmt, nextWeekday, toDate } from '../utils/dates.js';
 import { ProjectModel } from './ProjectModel.js';
 import { TaskModel } from './TaskModel.js';
+import { isCompletedStatus } from '../config/taskFlow.js';
 
 /** MODELO: Sprint (iteración de un proyecto, de miércoles a miércoles por defecto) */
 const col = () => db.collection('sprints');
@@ -89,7 +90,7 @@ export const SprintModel = {
   /** Carryover: mueve las tareas no entregadas del sprint a otro destino (o las deja en backlog). */
   carryover: (fromSprintId, targetSprintId = null) => {
     const tasks = TaskModel.findBySprint(fromSprintId);
-    const pending = tasks.filter((t) => t.status !== 'release');
+    const pending = tasks.filter((t) => !isCompletedStatus(t.status));
     pending.forEach((t) => TaskModel.update(t.id, { sprintId: targetSprintId }));
     return { moved: pending.length, taskIds: pending.map((t) => t.id) };
   },
@@ -97,7 +98,7 @@ export const SprintModel = {
   /** Resumen con métricas del sprint. */
   summarize: (sprint) => {
     const tasks = TaskModel.findBySprint(sprint.id);
-    const done = tasks.filter((t) => t.status === 'release').length;
+    const done = tasks.filter((t) => isCompletedStatus(t.status)).length;
     const points = tasks.reduce((s, t) => s + (t.storyPoints || 0), 0);
     return {
       ...sprint,
