@@ -2,6 +2,7 @@ import { TaskModel, KANBAN_COLUMNS, nextStage, stageIndex, STAGE_IDS } from '../
 import { UserModel } from '../models/UserModel.js';
 import { SprintModel } from '../models/SprintModel.js';
 import { ProjectModel } from '../models/ProjectModel.js';
+import { EpicModel } from '../models/EpicModel.js';
 import { SettingsModel } from '../models/SettingsModel.js';
 import { ChangeModel } from '../models/ChangeModel.js';
 import { BlockModel } from '../models/BlockModel.js';
@@ -114,11 +115,13 @@ export const TaskController = {
 
   create: (req, res) => {
     const payload = req.body || {};
-    if (!payload.title) return res.status(400).json({ error: 'El título es obligatorio.' });
+    if (!payload.title) return res.status(400).json({ error: 'El t\u00edtulo es obligatorio.' });
     if (payload.assigneeId && !payload.assignee) {
       const u = UserModel.findById(payload.assigneeId);
       if (u) payload.assignee = u.name;
     }
+    const placeError = normalizePlacement(payload, null);
+    if (placeError) return res.status(400).json({ error: placeError });
     const created = TaskModel.create(payload);
     SettingsModel.clearTaskOrder(created);
     return res.status(201).json({ task: created });
@@ -139,6 +142,8 @@ export const TaskController = {
     }
     const current = TaskModel.findById(req.params.id);
     if (!current) return res.status(404).json({ error: 'Tarea no encontrada.' });
+    const placeError = normalizePlacement(payload, current);
+    if (placeError) return res.status(400).json({ error: placeError });
     if (payload.dueDate && payload.dueDate !== current.dueDate && !payload.reasonType) {
       // Cambio directo (p. ej. drag en el timeline): nunca queda silencioso.
       TaskModel.audit(current.id, {
@@ -646,4 +651,38 @@ function sanitizeChecklist(value, current) {
   const added = items.filter((i) => !byKey.has(i.key)).length;
   const removed = before.filter((i) => !seen.has(i.key)).length;
   return { items, added, removed };
+}
+
+/**
+ * Valida y normaliza la ubicaci\u00f3n de la tarea (proyecto + \u00e9pica) para que
+ * siempre sean coherentes entre s\u00ed:
+ *  - si hay \u00e9pica, el proyecto se alinea al de la \u00e9pica;
+ *  - si el proyecto cambia respecto al actual, se limpia el sprint
+ *    (los sprints pertenecen al proyecto anterior).
+ * Devuelve '' si todo est\u00e1 bien o el mensaje de error.
+ */
+function normalizePlacement(payload, current) {
+  if (!('projectId' in payload) && !('epicId' in payload)) return '';
+  let projectId = 'projectId' in payload
+    ? String(payload.projectId || '').trim()
+    : String(current?.projectId || '');
+  let epicId = 'epicId' in payload
+    ? String(payload.epicId || '').trim()
+    : String(current?.epicId || '');
+  if (epicId) {
+    const epic = EpicModel.findById(epicId);
+    if (!epic) return 'La \u00e9pica indicada no existe.';
+    if ('projectId' in payload && projectId && projectId !== epic.projectId) {
+      if ('epicId' in payload) return 'El proyecto elegido no coincide con el de la \u00e9pica.';
+      epicId = ''; // cambio parcial de proyecto: se desasocia la \u00e9pica anterior
+    }
+    if (epicId) projectId = epic.projectId;
+  }
+  if (projectId && !ProjectModel.findById(projectId)) return 'El proyecto indicado no existe.';
+  payload.projectId = projectId;
+  payload.epicId = epicId;
+  if (current && projectId !== String(current.projectId || '') && current.sprintId) {
+    payload.sprintId = null;
+  }
+  return '';
 }
