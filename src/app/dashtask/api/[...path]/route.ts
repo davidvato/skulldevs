@@ -108,6 +108,7 @@ const routes: [string, string, ...Fn[]][] = [
   ['GET', '/dashboard/:role', auth as Fn, DashboardController.forRole],
 
   ['GET', '/projects', auth as Fn, ProjectController.list],
+  ['POST', '/projects', auth as Fn, ProjectController.create],
   ['GET', '/projects/tree', auth as Fn, ProjectController.tree],
   ['GET', '/projects/:id', auth as Fn, ProjectController.get],
 

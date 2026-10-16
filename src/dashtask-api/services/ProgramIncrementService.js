@@ -77,6 +77,8 @@ const backlogBriefs = (pi) => {
       assignedTo: i.assignedTo || '',
       assignedToId: i.assignedToId || '',
       projectId: i.projectId || '',
+      acceptanceCriteria: Array.isArray(i.acceptanceCriteria) ? i.acceptanceCriteria : [],
+      labels: Array.isArray(i.labels) ? i.labels : [],
       iteration: i.iteration || '',
     }));
 };

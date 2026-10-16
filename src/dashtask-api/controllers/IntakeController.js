@@ -64,7 +64,15 @@ export const IntakeController = {
   },
 
   update: (req, res) => {
-    const updated = IntakeModel.update(req.params.id, req.body || {});
+    const payload = { ...(req.body || {}) };
+    if ('projectId' in payload) {
+      const projectId = String(payload.projectId || '').trim();
+      if (projectId && !ProjectModel.findById(projectId)) {
+        return res.status(400).json({ error: 'El proyecto indicado no existe.' });
+      }
+      payload.projectId = projectId;
+    }
+    const updated = IntakeModel.update(req.params.id, payload);
     if (!updated) return res.status(404).json({ error: 'Intake no encontrado.' });
     return res.json({ intake: withMeta(updated, req.user) });
   },
