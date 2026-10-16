@@ -148,7 +148,7 @@ export const IntakeController = {
         }
         const pi = ProgramIncrementModel.findById(piId);
         if (!pi) return res.status(400).json({ error: 'El Program Increment indicado no existe.' });
-        if (intake.status !== 'prioritized') {
+        if (!['prioritized', 'ready', 'scheduled'].includes(intake.status)) {
           return res.status(422).json({
             error: 'El intake debe estar validado y priorizado (revisión conjunta / Backlog Review) antes de agregarse al backlog del PI.',
           });
