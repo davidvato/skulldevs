@@ -153,8 +153,18 @@ export const IntakeController = {
             error: 'El intake debe estar validado y priorizado (revisión conjunta / Backlog Review) antes de agregarse al backlog del PI.',
           });
         }
-        // 1) entra al backlog del portafolio del PI, 2) se autoriza, 3) se asigna al PM del value stream.
-        const pm = resolveProjectPM(intake.valueStream);
+        // 1) entra al backlog del portafolio del PI, 2) se autoriza, 3) se asigna al PM:
+        // el PM se elige en el formulario (pmId); si no viene, se resuelve el del value stream.
+        let pm = resolveProjectPM(intake.valueStream);
+        const pmId = req.body.pmId || req.body.assignedToId || '';
+        if (pmId) {
+          const chosen = UserModel.findById(pmId);
+          if (!chosen) return res.status(400).json({ error: 'El PM seleccionado no existe.' });
+          if (chosen.role !== 'product_manager') {
+            return res.status(400).json({ error: 'El responsable del intake debe ser un Product Manager.' });
+          }
+          pm = { projectId: intake.projectId || pm.projectId || '', userId: chosen.id, userName: chosen.name };
+        }
         ProgramIncrementModel.addToBacklog(piId, intake.id);
         patch = {
           ...patch,
